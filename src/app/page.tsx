@@ -18,14 +18,13 @@ import { mockExpenses } from '@/lib/data';
 
 
 export default function DashboardPage() {
-    const [expenses, setExpenses] = useState<Expense[]>([]);
+    const [expenses, setExpenses] = useState<Expense[]>(mockExpenses);
 
     useEffect(() => {
         const storedExpenses = localStorage.getItem('expenses');
         if (storedExpenses) {
             setExpenses(JSON.parse(storedExpenses));
         } else {
-            setExpenses(mockExpenses);
             localStorage.setItem('expenses', JSON.stringify(mockExpenses));
         }
     }, []);
@@ -160,4 +159,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
 

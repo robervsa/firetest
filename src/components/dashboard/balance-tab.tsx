@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import type { Expense } from '@/lib/types';
+import { mockExpenses } from '@/lib/data';
 
 const initialChartData = [
     { name: 'Comida', total: 0 },
@@ -87,7 +88,7 @@ export default function BalanceTab({ expenses }: { expenses: Expense[] }) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {expenses.slice(0, 5).map((expense) => (
+              {mockExpenses.slice(0, 5).map((expense) => (
                 <TableRow key={expense.id}>
                   <TableCell>
                     <div className="font-medium">{expense.user}</div>
