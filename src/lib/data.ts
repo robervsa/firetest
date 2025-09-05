@@ -1,4 +1,14 @@
-import type { Expense, Entity, AuditLog } from './types';
+
+import type { Expense, Entity, AuditLog, ExpenseCategory } from './types';
+
+export const mockCategories: ExpenseCategory[] = [
+  { id: '1', name: 'comida', description: 'Gastos relacionados con alimentación.' },
+  { id: '2', name: 'combustible', description: 'Gastos de gasolina y diésel.' },
+  { id: '3', name: 'limpieza', description: 'Productos y servicios de limpieza.' },
+  { id: '4', name: 'transporte', description: 'Taxis, boletos de autobús, etc.' },
+  { id: '5', name: 'oficina', description: 'Suministros y papelería de oficina.' },
+  { id: '6', name: 'otro', description: 'Gastos varios no clasificados.' },
+];
 
 export const mockExpenses: Expense[] = [
   { id: '1', description: 'Almuerzo de equipo', amount: 150.75, category: 'comida', date: '2024-05-20', entity: 'Unidad de Marketing', user: 'Juan Pérez' },
@@ -11,11 +21,11 @@ export const mockExpenses: Expense[] = [
 ];
 
 export const mockEntities: Entity[] = [
-  { id: '1', name: 'Unidad de Marketing', totalExpenses: 3450.50, employeeCount: 12, avatar: 'M' },
-  { id: '2', name: 'Unidad de Ventas', totalExpenses: 8970.00, employeeCount: 25, avatar: 'V' },
-  { id: '3', name: 'Oficina Central', totalExpenses: 12500.20, employeeCount: 40, avatar: 'OC' },
-  { id: '4', name: 'Logística', totalExpenses: 6200.80, employeeCount: 18, avatar: 'L' },
-  { id: '5', name: 'Recursos Humanos', totalExpenses: 2100.00, employeeCount: 8, avatar: 'RH' },
+  { id: '1', name: 'Casa Tulum', totalExpenses: 3450.50, employeeCount: 12 },
+  { id: '2', name: 'Herbamedica', totalExpenses: 8970.00, employeeCount: 25 },
+  { id: '3', name: 'Eventos Valle', totalExpenses: 12500.20, employeeCount: 40 },
+  { id: '4', name: "Sian Ka'an", totalExpenses: 6200.80, employeeCount: 18 },
+  { id: '5', name: 'Khungi Rancho', totalExpenses: 2100.00, employeeCount: 8 },
 ];
 
 export const mockAuditLogs: AuditLog[] = [

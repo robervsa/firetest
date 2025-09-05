@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -28,24 +29,18 @@ import {
 import { useToast } from '@/hooks/use-toast';
 
 import { suggestExpenseCategory } from '@/ai/flows/suggest-expense-category';
-import type { ExpenseCategory, Expense } from '@/lib/types';
-import { mockEntities } from '@/lib/data';
-
-const categories: ExpenseCategory[] = ['comida', 'combustible', 'limpieza', 'transporte', 'oficina', 'otro'];
+import type { ExpenseCategory, Expense, Entity } from '@/lib/types';
+import { mockCategories, mockEntities } from '@/lib/data';
 
 const formSchema = z.object({
-  id: z.string(),
   description: z.string().min(2, {
     message: 'La descripción debe tener al menos 2 caracteres.',
   }),
   amount: z.coerce.number().positive({
     message: 'El monto debe ser un número positivo.',
   }),
-  category: z.enum(categories, {
-    errorMap: () => ({ message: 'Por favor, seleccione una categoría válida.' }),
-  }),
+  category: z.string().min(1, { message: 'Por favor, seleccione una categoría.' }),
   entity: z.string().min(1, { message: 'Por favor, seleccione una entidad.' }),
-  user: z.string(),
 });
 
 export default function AddExpenseForm() {
@@ -53,12 +48,27 @@ export default function AddExpenseForm() {
   const { toast } = useToast();
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+  const [categories, setCategories] = useState<ExpenseCategory[]>(mockCategories);
+  const [entities, setEntities] = useState<Entity[]>(mockEntities);
+
+  useEffect(() => {
+    const storedCategories = localStorage.getItem('categories');
+    if (storedCategories) {
+      setCategories(JSON.parse(storedCategories));
+    }
+    const storedEntities = localStorage.getItem('entities');
+    if (storedEntities) {
+      setEntities(JSON.parse(storedEntities));
+    }
+  }, []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       description: '',
       amount: 0,
+      category: '',
+      entity: '',
     },
   });
 
@@ -73,7 +83,7 @@ export default function AddExpenseForm() {
     setIsLoadingSuggestions(true);
     try {
       const result = await suggestExpenseCategory({ description, amount });
-      const validSuggestions = result.categorySuggestions.filter(cat => categories.includes(cat as ExpenseCategory));
+      const validSuggestions = result.categorySuggestions.filter(cat => categories.some(c => c.name === cat));
       setSuggestions(validSuggestions);
     } catch (error) {
       console.error('Error getting suggestions:', error);
@@ -88,7 +98,8 @@ export default function AddExpenseForm() {
         ...values,
         id: new Date().toISOString(),
         date: new Date().toISOString(),
-        user: 'Usuario Actual' // This would be dynamic in a real app
+        user: 'Usuario Actual', // This would be dynamic in a real app
+        category: values.category as ExpenseCategory['name'],
     };
     
     const storedExpenses = localStorage.getItem('expenses');
@@ -152,8 +163,8 @@ export default function AddExpenseForm() {
                 </FormControl>
                 <SelectContent>
                   {categories.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                    <SelectItem key={cat.id} value={cat.name}>
+                      {cat.name.charAt(0).toUpperCase() + cat.name.slice(1)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -174,7 +185,7 @@ export default function AddExpenseForm() {
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        form.setValue('category', suggestion as ExpenseCategory);
+                        form.setValue('category', suggestion as ExpenseCategory['name']);
                       }}
                     >
                       {suggestion.charAt(0).toUpperCase() + suggestion.slice(1)}
@@ -200,7 +211,7 @@ export default function AddExpenseForm() {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {mockEntities.map((entity) => (
+                  {entities.map((entity) => (
                     <SelectItem key={entity.id} value={entity.name}>
                       {entity.name}
                     </SelectItem>

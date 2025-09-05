@@ -1,3 +1,4 @@
+
 'use client';
 import { useEffect, useState } from 'react';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
@@ -18,29 +19,25 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import type { Expense } from '@/lib/types';
-import { mockExpenses } from '@/lib/data';
+import { mockCategories, mockExpenses } from '@/lib/data';
 
-const initialChartData = [
-    { name: 'Comida', total: 0 },
-    { name: 'Combustible', total: 0 },
-    { name: 'Limpieza', total: 0 },
-    { name: 'Transporte', total: 0 },
-    { name: 'Oficina', total: 0 },
-    { name: 'Otro', total: 0 },
-];
+const initialChartData = mockCategories.map(c => ({ name: c.name.charAt(0).toUpperCase() + c.name.slice(1), total: 0 }));
 
 export default function BalanceTab({ expenses }: { expenses: Expense[] }) {
   const [chartData, setChartData] = useState(initialChartData);
 
   useEffect(() => {
-    const data = expenses.reduce((acc, expense) => {
-        const category = acc.find(c => c.name.toLowerCase() === expense.category);
-        if (category) {
-            category.total += expense.amount;
-        }
-        return acc;
-    }, JSON.parse(JSON.stringify(initialChartData)));
-    setChartData(data);
+    if (expenses.length > 0) {
+      const data = expenses.reduce((acc, expense) => {
+          const categoryName = expense.category.charAt(0).toUpperCase() + expense.category.slice(1);
+          const category = acc.find(c => c.name === categoryName);
+          if (category) {
+              category.total += expense.amount;
+          }
+          return acc;
+      }, JSON.parse(JSON.stringify(initialChartData)));
+      setChartData(data);
+    }
   }, [expenses]);
 
   return (
@@ -88,7 +85,7 @@ export default function BalanceTab({ expenses }: { expenses: Expense[] }) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockExpenses.slice(0, 5).map((expense) => (
+              {expenses.slice(0, 5).map((expense) => (
                 <TableRow key={expense.id}>
                   <TableCell>
                     <div className="font-medium">{expense.user}</div>

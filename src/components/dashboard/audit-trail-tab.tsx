@@ -1,3 +1,6 @@
+
+'use client';
+
 import {
   Card,
   CardContent,
@@ -17,6 +20,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { mockAuditLogs } from '@/lib/data';
 import type { AuditLogAction } from '@/lib/types';
+import { useEffect, useState } from 'react';
 
 const getBadgeVariant = (action: AuditLogAction) => {
   switch (action) {
@@ -35,6 +39,12 @@ const getBadgeVariant = (action: AuditLogAction) => {
 
 
 export default function AuditTrailTab() {
+    const [logs, setLogs] = useState(mockAuditLogs);
+
+    useEffect(() => {
+        // En una aplicación real, aquí se obtendrían los logs del servidor
+    }, []);
+
   return (
     <Card>
       <CardHeader>
@@ -54,7 +64,7 @@ export default function AuditTrailTab() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {mockAuditLogs.map((log) => (
+            {logs.map((log) => (
               <TableRow key={log.id}>
                 <TableCell>
                   <div className="flex items-center gap-3">

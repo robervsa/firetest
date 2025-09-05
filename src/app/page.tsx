@@ -10,7 +10,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import BalanceTab from '@/components/dashboard/balance-tab';
 import EntitiesTab from '@/components/dashboard/entities-tab';
-import AuditTrailTab from '@/components/dashboard/audit-trail-tab';
+import CategoriesTab from '@/components/dashboard/categories-tab';
 import Header from '@/components/header';
 import { useState, useEffect } from 'react';
 import type { Expense } from '@/lib/types';
@@ -18,13 +18,14 @@ import { mockExpenses } from '@/lib/data';
 
 
 export default function DashboardPage() {
-    const [expenses, setExpenses] = useState<Expense[]>(mockExpenses);
+    const [expenses, setExpenses] = useState<Expense[]>([]);
 
     useEffect(() => {
         const storedExpenses = localStorage.getItem('expenses');
         if (storedExpenses) {
             setExpenses(JSON.parse(storedExpenses));
         } else {
+            setExpenses(mockExpenses);
             localStorage.setItem('expenses', JSON.stringify(mockExpenses));
         }
     }, []);
@@ -143,7 +144,7 @@ export default function DashboardPage() {
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="balance">Balance</TabsTrigger>
             <TabsTrigger value="entities">Entidades</TabsTrigger>
-            <TabsTrigger value="audit">Audit Trail</TabsTrigger>
+            <TabsTrigger value="categories">Categorías</TabsTrigger>
           </TabsList>
           <TabsContent value="balance">
             <BalanceTab expenses={expenses} />
@@ -151,13 +152,11 @@ export default function DashboardPage() {
           <TabsContent value="entities">
             <EntitiesTab />
           </TabsContent>
-          <TabsContent value="audit">
-            <AuditTrailTab />
+          <TabsContent value="categories">
+            <CategoriesTab />
           </TabsContent>
         </Tabs>
       </main>
     </div>
   );
 }
-
-

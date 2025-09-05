@@ -1,10 +1,15 @@
-export type ExpenseCategory = 'comida' | 'combustible' | 'limpieza' | 'transporte' | 'oficina' | 'otro';
+
+export interface ExpenseCategory {
+  id: string;
+  name: string;
+  description: string;
+}
 
 export interface Expense {
   id: string;
   description: string;
   amount: number;
-  category: ExpenseCategory;
+  category: ExpenseCategory['name'];
   date: string;
   entity: string;
   user: string;
@@ -15,7 +20,6 @@ export interface Entity {
   name: string;
   totalExpenses: number;
   employeeCount: number;
-  avatar: string;
 }
 
 export type AuditLogAction = 'inicio de sesion' | 'cierre de sesión' | 'añadir gasto' | 'editar gasto';
