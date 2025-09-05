@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -27,12 +28,13 @@ import {
 import { useToast } from '@/hooks/use-toast';
 
 import { suggestExpenseCategory } from '@/ai/flows/suggest-expense-category';
-import type { ExpenseCategory } from '@/lib/types';
+import type { ExpenseCategory, Expense } from '@/lib/types';
 import { mockEntities } from '@/lib/data';
 
 const categories: ExpenseCategory[] = ['comida', 'combustible', 'limpieza', 'transporte', 'oficina', 'otro'];
 
 const formSchema = z.object({
+  id: z.string(),
   description: z.string().min(2, {
     message: 'La descripción debe tener al menos 2 caracteres.',
   }),
@@ -43,9 +45,11 @@ const formSchema = z.object({
     errorMap: () => ({ message: 'Por favor, seleccione una categoría válida.' }),
   }),
   entity: z.string().min(1, { message: 'Por favor, seleccione una entidad.' }),
+  user: z.string(),
 });
 
 export default function AddExpenseForm() {
+  const router = useRouter();
   const { toast } = useToast();
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
@@ -80,13 +84,25 @@ export default function AddExpenseForm() {
   }
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+    const newExpense: Expense = {
+        ...values,
+        id: new Date().toISOString(),
+        date: new Date().toISOString(),
+        user: 'Usuario Actual' // This would be dynamic in a real app
+    };
+    
+    const storedExpenses = localStorage.getItem('expenses');
+    const expenses = storedExpenses ? JSON.parse(storedExpenses) : [];
+    expenses.unshift(newExpense);
+    localStorage.setItem('expenses', JSON.stringify(expenses));
+    
     toast({
       title: 'Gasto Registrado',
       description: `El gasto de ${values.amount} en ${values.category} ha sido registrado.`,
     });
     form.reset();
     setSuggestions([]);
+    router.push('/');
   }
 
   return (

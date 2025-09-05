@@ -17,7 +17,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { mockExpenses } from '@/lib/data';
+import type { Expense } from '@/lib/types';
 
 const initialChartData = [
     { name: 'Comida', total: 0 },
@@ -26,21 +26,21 @@ const initialChartData = [
     { name: 'Transporte', total: 0 },
     { name: 'Oficina', total: 0 },
     { name: 'Otro', total: 0 },
-  ];
+];
 
-export default function BalanceTab() {
+export default function BalanceTab({ expenses }: { expenses: Expense[] }) {
   const [chartData, setChartData] = useState(initialChartData);
 
   useEffect(() => {
-    setChartData([
-      { name: 'Comida', total: Math.floor(Math.random() * 5000) + 1000 },
-      { name: 'Combustible', total: Math.floor(Math.random() * 5000) + 1000 },
-      { name: 'Limpieza', total: Math.floor(Math.random() * 5000) + 1000 },
-      { name: 'Transporte', total: Math.floor(Math.random() * 5000) + 1000 },
-      { name: 'Oficina', total: Math.floor(Math.random() * 5000) + 1000 },
-      { name: 'Otro', total: Math.floor(Math.random() * 5000) + 1000 },
-    ]);
-  }, []);
+    const data = expenses.reduce((acc, expense) => {
+        const category = acc.find(c => c.name.toLowerCase() === expense.category);
+        if (category) {
+            category.total += expense.amount;
+        }
+        return acc;
+    }, JSON.parse(JSON.stringify(initialChartData)));
+    setChartData(data);
+  }, [expenses]);
 
   return (
     <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
@@ -87,7 +87,7 @@ export default function BalanceTab() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockExpenses.slice(0, 5).map((expense) => (
+              {expenses.slice(0, 5).map((expense) => (
                 <TableRow key={expense.id}>
                   <TableCell>
                     <div className="font-medium">{expense.user}</div>

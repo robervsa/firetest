@@ -1,3 +1,5 @@
+
+'use client';
 import {
   Card,
   CardContent,
@@ -10,8 +12,27 @@ import BalanceTab from '@/components/dashboard/balance-tab';
 import EntitiesTab from '@/components/dashboard/entities-tab';
 import AuditTrailTab from '@/components/dashboard/audit-trail-tab';
 import Header from '@/components/header';
+import { useState, useEffect } from 'react';
+import type { Expense } from '@/lib/types';
+import { mockExpenses } from '@/lib/data';
+
 
 export default function DashboardPage() {
+    const [expenses, setExpenses] = useState<Expense[]>([]);
+
+    useEffect(() => {
+        const storedExpenses = localStorage.getItem('expenses');
+        if (storedExpenses) {
+            setExpenses(JSON.parse(storedExpenses));
+        } else {
+            setExpenses(mockExpenses);
+            localStorage.setItem('expenses', JSON.stringify(mockExpenses));
+        }
+    }, []);
+
+    const totalSpent = expenses.reduce((acc, expense) => acc + expense.amount, 0);
+
+
   return (
     <div className="flex min-h-screen w-full flex-col">
       <Header />
@@ -34,7 +55,7 @@ export default function DashboardPage() {
               </svg>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">$45,231.89</div>
+              <div className="text-2xl font-bold">${totalSpent.toFixed(2)}</div>
               <p className="text-xs text-muted-foreground">
                 +20.1% from last month
               </p>
@@ -61,7 +82,7 @@ export default function DashboardPage() {
               </svg>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">+2350</div>
+              <div className="text-2xl font-bold">+{expenses.length}</div>
               <p className="text-xs text-muted-foreground">
                 +180.1% from last month
               </p>
@@ -126,7 +147,7 @@ export default function DashboardPage() {
             <TabsTrigger value="audit">Audit Trail</TabsTrigger>
           </TabsList>
           <TabsContent value="balance">
-            <BalanceTab />
+            <BalanceTab expenses={expenses} />
           </TabsContent>
           <TabsContent value="entities">
             <EntitiesTab />
@@ -139,3 +160,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+
