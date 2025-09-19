@@ -17,6 +17,7 @@ import {
 import { Input } from '@/components/ui/input';
 import type { Entity } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/lib/supabase/client';
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -41,18 +42,35 @@ export default function AddEntityForm({ onEntityAdded }: AddEntityFormProps) {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    const newEntity: Entity = {
-      id: new Date().toISOString(),
-      ...values,
-      totalExpenses: 0, // Initial value for new entities
-    };
-    onEntityAdded(newEntity);
-    toast({
-      title: 'Entidad Añadida',
-      description: `La entidad "${values.name}" ha sido agregada.`,
-    });
-    form.reset();
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    const { data, error } = await supabase
+      .from('entities')
+      .insert([
+        { name: values.name, employee_count: values.employeeCount, total_expenses: 0 },
+      ])
+      .select()
+      .single();
+    
+    if (error) {
+        toast({
+            title: 'Error',
+            description: `Hubo un error al agregar la entidad: ${error.message}`,
+            variant: 'destructive'
+        })
+    } else {
+        const newEntity: Entity = {
+            id: data.id,
+            name: data.name,
+            employeeCount: data.employee_count,
+            totalExpenses: data.total_expenses,
+        }
+        onEntityAdded(newEntity);
+        toast({
+          title: 'Entidad Añadida',
+          description: `La entidad "${values.name}" ha sido agregada.`,
+        });
+        form.reset();
+    }
   }
 
   return (

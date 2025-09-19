@@ -29,8 +29,9 @@ import {
 import { useToast } from '@/hooks/use-toast';
 
 import { suggestExpenseCategory } from '@/ai/flows/suggest-expense-category';
-import type { ExpenseCategory, Expense, Entity } from '@/lib/types';
-import { mockCategories, mockEntities } from '@/lib/data';
+import type { ExpenseCategory, Entity } from '@/lib/types';
+import { supabase } from '@/lib/supabase/client';
+
 
 const formSchema = z.object({
   description: z.string().min(2, {
@@ -48,18 +49,21 @@ export default function AddExpenseForm() {
   const { toast } = useToast();
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
-  const [categories, setCategories] = useState<ExpenseCategory[]>(mockCategories);
-  const [entities, setEntities] = useState<Entity[]>(mockEntities);
+  const [categories, setCategories] = useState<ExpenseCategory[]>([]);
+  const [entities, setEntities] = useState<Entity[]>([]);
 
   useEffect(() => {
-    const storedCategories = localStorage.getItem('categories');
-    if (storedCategories) {
-      setCategories(JSON.parse(storedCategories));
+    const fetchInitialData = async () => {
+        const { data: categoriesData, error: categoriesError } = await supabase.from('categories').select('*');
+        if (categoriesData) setCategories(categoriesData);
+
+        const { data: entitiesData, error: entitiesError } = await supabase.from('entities').select('*');
+        if (entitiesData) {
+            const mappedEntities = entitiesData.map(e => ({...e, employeeCount: e.employee_count, totalExpenses: e.total_expenses}));
+            setEntities(mappedEntities);
+        }
     }
-    const storedEntities = localStorage.getItem('entities');
-    if (storedEntities) {
-      setEntities(JSON.parse(storedEntities));
-    }
+    fetchInitialData();
   }, []);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -93,27 +97,29 @@ export default function AddExpenseForm() {
     }
   }
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    const newExpense: Expense = {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    const expenseData = {
         ...values,
-        id: new Date().toISOString(),
-        date: new Date().toISOString(),
         user: 'Usuario Actual', // This would be dynamic in a real app
-        category: values.category as ExpenseCategory['name'],
     };
     
-    const storedExpenses = localStorage.getItem('expenses');
-    const expenses = storedExpenses ? JSON.parse(storedExpenses) : [];
-    expenses.unshift(newExpense);
-    localStorage.setItem('expenses', JSON.stringify(expenses));
+    const { error } = await supabase.from('expenses').insert([expenseData]);
     
-    toast({
-      title: 'Gasto Registrado',
-      description: `El gasto de ${values.amount} en ${values.category} ha sido registrado.`,
-    });
-    form.reset();
-    setSuggestions([]);
-    router.push('/');
+    if (error) {
+        toast({
+            title: 'Error',
+            description: `Hubo un error al registrar el gasto: ${error.message}`,
+            variant: 'destructive',
+        });
+    } else {
+        toast({
+          title: 'Gasto Registrado',
+          description: `El gasto de ${values.amount} en ${values.category} ha sido registrado.`,
+        });
+        form.reset();
+        setSuggestions([]);
+        router.push('/');
+    }
   }
 
   return (

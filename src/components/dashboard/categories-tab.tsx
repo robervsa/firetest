@@ -25,28 +25,40 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import AddCategoryForm from '@/components/add-category-form';
-import { mockCategories } from '@/lib/data';
 import type { ExpenseCategory } from '@/lib/types';
 import { PlusCircle } from 'lucide-react';
+import { supabase } from '@/lib/supabase/client';
 
 export default function CategoriesTab() {
   const [categories, setCategories] = useState<ExpenseCategory[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
-    const storedCategories = localStorage.getItem('categories');
-    if (storedCategories) {
-      setCategories(JSON.parse(storedCategories));
-    } else {
-      setCategories(mockCategories);
-      localStorage.setItem('categories', JSON.stringify(mockCategories));
+    const fetchCategories = async () => {
+        const { data, error } = await supabase.from('categories').select('*');
+        if (data) {
+            setCategories(data);
+        }
+    };
+    fetchCategories();
+
+    const channel = supabase.channel('realtime categories')
+        .on('postgres_changes', {
+            event: '*',
+            schema: 'public',
+            table: 'categories'
+        }, (payload) => {
+            fetchCategories();
+        })
+        .subscribe();
+    
+    return () => {
+        supabase.removeChannel(channel);
     }
   }, []);
 
   const handleCategoryAdded = (newCategory: ExpenseCategory) => {
-    const updatedCategories = [...categories, newCategory];
-    setCategories(updatedCategories);
-    localStorage.setItem('categories', JSON.stringify(updatedCategories));
+    // No need to manually add, realtime subscription will handle it.
     setIsDialogOpen(false);
   };
 

@@ -18,16 +18,27 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import type { Expense } from '@/lib/types';
-import { mockCategories, mockExpenses } from '@/lib/data';
-
-const initialChartData = mockCategories.map(c => ({ name: c.name.charAt(0).toUpperCase() + c.name.slice(1), total: 0 }));
+import type { Expense, ExpenseCategory } from '@/lib/types';
+import { supabase } from '@/lib/supabase/client';
 
 export default function BalanceTab({ expenses }: { expenses: Expense[] }) {
-  const [chartData, setChartData] = useState(initialChartData);
+  const [chartData, setChartData] = useState<{name: string, total: number}[]>([]);
+  const [categories, setCategories] = useState<ExpenseCategory[]>([]);
+  
+  useEffect(() => {
+    const fetchCategories = async () => {
+        const { data, error } = await supabase.from('categories').select('*');
+        if (data) {
+            setCategories(data);
+        }
+    }
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
-    if (expenses.length > 0) {
+    if (expenses.length > 0 && categories.length > 0) {
+      const initialChartData = categories.map(c => ({ name: c.name.charAt(0).toUpperCase() + c.name.slice(1), total: 0 }));
+
       const data = expenses.reduce((acc, expense) => {
           const categoryName = expense.category.charAt(0).toUpperCase() + expense.category.slice(1);
           const category = acc.find(c => c.name === categoryName);
@@ -38,7 +49,7 @@ export default function BalanceTab({ expenses }: { expenses: Expense[] }) {
       }, JSON.parse(JSON.stringify(initialChartData)));
       setChartData(data);
     }
-  }, [expenses]);
+  }, [expenses, categories]);
 
   return (
     <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">

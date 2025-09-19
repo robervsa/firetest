@@ -14,20 +14,44 @@ import CategoriesTab from '@/components/dashboard/categories-tab';
 import Header from '@/components/header';
 import { useState, useEffect } from 'react';
 import type { Expense } from '@/lib/types';
-import { mockExpenses } from '@/lib/data';
+import { supabase } from '@/lib/supabase/client';
 
 
 export default function DashboardPage() {
     const [expenses, setExpenses] = useState<Expense[]>([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const storedExpenses = localStorage.getItem('expenses');
-        if (storedExpenses) {
-            setExpenses(JSON.parse(storedExpenses));
-        } else {
-            setExpenses(mockExpenses);
-            localStorage.setItem('expenses', JSON.stringify(mockExpenses));
-        }
+        const fetchExpenses = async () => {
+            const { data, error } = await supabase
+                .from('expenses')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('Error fetching expenses:', error);
+            } else {
+                setExpenses(data as Expense[]);
+            }
+            setLoading(false);
+        };
+
+        fetchExpenses();
+        
+        const channel = supabase.channel('realtime expenses')
+            .on('postgres_changes', {
+                event: '*',
+                schema: 'public',
+                table: 'expenses'
+            }, (payload) => {
+                fetchExpenses();
+            })
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+
     }, []);
 
     const totalSpent = expenses.reduce((acc, expense) => acc + expense.amount, 0);

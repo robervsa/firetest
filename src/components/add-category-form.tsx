@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import type { ExpenseCategory } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/lib/supabase/client';
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -42,17 +43,29 @@ export default function AddCategoryForm({ onCategoryAdded }: AddCategoryFormProp
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    const newCategory: ExpenseCategory = {
-      id: new Date().toISOString(),
-      ...values,
-    };
-    onCategoryAdded(newCategory);
-    toast({
-      title: 'Categoría Añadida',
-      description: `La categoría "${values.name}" ha sido agregada.`,
-    });
-    form.reset();
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    const { data, error } = await supabase
+        .from('categories')
+        .insert([
+            { name: values.name, description: values.description },
+        ])
+        .select()
+        .single();
+
+    if (error) {
+        toast({
+            title: 'Error',
+            description: `Hubo un error al agregar la categoría: ${error.message}`,
+            variant: 'destructive'
+        })
+    } else {
+        onCategoryAdded(data as ExpenseCategory);
+        toast({
+          title: 'Categoría Añadida',
+          description: `La categoría "${values.name}" ha sido agregada.`,
+        });
+        form.reset();
+    }
   }
 
   return (

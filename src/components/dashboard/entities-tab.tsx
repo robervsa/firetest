@@ -18,28 +18,41 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import AddEntityForm from '@/components/add-entity-form';
-import { mockEntities } from '@/lib/data';
 import type { Entity } from '@/lib/types';
 import { Users, PlusCircle } from 'lucide-react';
+import { supabase } from '@/lib/supabase/client';
 
 export default function EntitiesTab() {
   const [entities, setEntities] = useState<Entity[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
-    const storedEntities = localStorage.getItem('entities');
-    if (storedEntities) {
-      setEntities(JSON.parse(storedEntities));
-    } else {
-      setEntities(mockEntities);
-      localStorage.setItem('entities', JSON.stringify(mockEntities));
+    const fetchEntities = async () => {
+        const { data, error } = await supabase.from('entities').select('*');
+        if (data) {
+            const mappedData = data.map(e => ({...e, employeeCount: e.employee_count, totalExpenses: e.total_expenses}));
+            setEntities(mappedData);
+        }
+    };
+    fetchEntities();
+
+    const channel = supabase.channel('realtime entities')
+        .on('postgres_changes', {
+            event: '*',
+            schema: 'public',
+            table: 'entities'
+        }, (payload) => {
+            fetchEntities();
+        })
+        .subscribe();
+    
+    return () => {
+        supabase.removeChannel(channel);
     }
   }, []);
 
   const handleEntityAdded = (newEntity: Entity) => {
-    const updatedEntities = [...entities, newEntity];
-    setEntities(updatedEntities);
-    localStorage.setItem('entities', JSON.stringify(updatedEntities));
+    // No need to manually add, realtime subscription will handle it.
     setIsDialogOpen(false);
   };
 
