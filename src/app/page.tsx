@@ -115,7 +115,7 @@ export default function DashboardPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Ediciones hechas
+                Ediciones realizadas
               </CardTitle>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -133,12 +133,12 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">+12</div>
-              <p className="text-xs text-muted-foreground">
+              {/* <p className="text-xs text-muted-foreground">
                 +19% from last month
-              </p>
+              </p> */}
             </CardContent>
           </Card>
-          <Card>
+          {/* <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Usuarios Activos
@@ -162,7 +162,7 @@ export default function DashboardPage() {
                 +201 since last hour
               </p>
             </CardContent>
-          </Card>
+          </Card> */}
         </div>
         <Tabs defaultValue="balance">
           <TabsList className="grid w-full grid-cols-3">
