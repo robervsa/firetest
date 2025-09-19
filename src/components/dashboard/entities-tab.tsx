@@ -60,21 +60,21 @@ export default function EntitiesTab() {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
-          <CardTitle>Listado de Entidades</CardTitle>
+          <CardTitle>Listado de Grupos</CardTitle>
           <CardDescription>
-            Agregue y gestione las entidades de su organización.
+            Agregue y gestione los grupos.
           </CardDescription>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <PlusCircle className="mr-2 h-4 w-4" />
-              Añadir Entidad
+              Añadir Grupo
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>Añadir Nueva Entidad</DialogTitle>
+              <DialogTitle>Añadir Nuevo Grupo</DialogTitle>
             </DialogHeader>
             <AddEntityForm onEntityAdded={handleEntityAdded} />
           </DialogContent>

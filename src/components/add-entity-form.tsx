@@ -81,7 +81,7 @@ export default function AddEntityForm({ onEntityAdded }: AddEntityFormProps) {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nombre de la Entidad</FormLabel>
+              <FormLabel>Nombre del Grupo</FormLabel>
               <FormControl>
                 <Input placeholder="Ej: Departamento de IT" {...field} />
               </FormControl>
@@ -102,7 +102,7 @@ export default function AddEntityForm({ onEntityAdded }: AddEntityFormProps) {
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full">Añadir Entidad</Button>
+        <Button type="submit" className="w-full">Añadir Grupo</Button>
       </form>
     </Form>
   );
