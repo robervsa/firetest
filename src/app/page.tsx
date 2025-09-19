@@ -80,9 +80,9 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">${totalSpent.toFixed(2)}</div>
-              <p className="text-xs text-muted-foreground">
+              {/* <p className="text-xs text-muted-foreground">
                 +20.1% from last month
-              </p>
+              </p> */}
             </CardContent>
           </Card>
           <Card>
@@ -107,9 +107,9 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">+{expenses.length}</div>
-              <p className="text-xs text-muted-foreground">
+              {/* <p className="text-xs text-muted-foreground">
                 +180.1% from last month
-              </p>
+              </p> */}
             </CardContent>
           </Card>
           <Card>
