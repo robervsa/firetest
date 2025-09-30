@@ -55,6 +55,15 @@ export default function AddExpenseForm() {
   const [userProfile, setUserProfile] = useState<Profile | null>(null);
   const [userEntity, setUserEntity] = useState<Entity | null>(null);
 
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      description: '',
+      amount: 0,
+      category: '',
+      entity: '',
+    },
+  });
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -102,16 +111,6 @@ export default function AddExpenseForm() {
     }
     fetchInitialData();
   }, [supabase, form]);
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      description: '',
-      amount: 0,
-      category: '',
-      entity: '',
-    },
-  });
 
   async function handleGetSuggestions() {
     const description = form.getValues('description');
