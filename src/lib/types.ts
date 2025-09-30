@@ -13,7 +13,8 @@ export interface Expense {
   category: ExpenseCategory['name'];
   date: string;
   entity: string;
-  user: string;
+  user_id: string;
+  user?: string; // This can be removed if not needed.
 }
 
 export interface Entity {
@@ -33,3 +34,5 @@ export interface AuditLog {
   details: string;
   date: string;
 }
+
+    

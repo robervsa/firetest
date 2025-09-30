@@ -17,7 +17,7 @@ import {
 import { Input } from '@/components/ui/input';
 import type { Entity } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/lib/supabase/client';
+import { createClient } from '@/lib/supabase/client';
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -34,6 +34,7 @@ interface AddEntityFormProps {
 
 export default function AddEntityForm({ onEntityAdded }: AddEntityFormProps) {
   const { toast } = useToast();
+  const supabase = createClient();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -43,10 +44,16 @@ export default function AddEntityForm({ onEntityAdded }: AddEntityFormProps) {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+        toast({ title: 'Error', description: 'Debes iniciar sesión para agregar una entidad.', variant: 'destructive' });
+        return;
+    }
+    
     const { data, error } = await supabase
       .from('entities')
       .insert([
-        { name: values.name, employee_count: values.employeeCount, total_expenses: 0 },
+        { name: values.name, employee_count: values.employeeCount, total_expenses: 0, user_id: user.id },
       ])
       .select()
       .single();
@@ -107,3 +114,5 @@ export default function AddEntityForm({ onEntityAdded }: AddEntityFormProps) {
     </Form>
   );
 }
+
+    

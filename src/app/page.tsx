@@ -14,12 +14,13 @@ import CategoriesTab from '@/components/dashboard/categories-tab';
 import Header from '@/components/header';
 import { useState, useEffect } from 'react';
 import type { Expense } from '@/lib/types';
-import { supabase } from '@/lib/supabase/client';
+import { createClient } from '@/lib/supabase/client';
 
 
 export default function DashboardPage() {
     const [expenses, setExpenses] = useState<Expense[]>([]);
     const [loading, setLoading] = useState(true);
+    const supabase = createClient();
 
     useEffect(() => {
         const fetchExpenses = async () => {
@@ -52,7 +53,7 @@ export default function DashboardPage() {
             supabase.removeChannel(channel);
         };
 
-    }, []);
+    }, [supabase]);
 
     const totalSpent = expenses.reduce((acc, expense) => acc + expense.amount, 0);
 
@@ -115,7 +116,7 @@ export default function DashboardPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Ediciones realizadas
+                Ediciones hechas
               </CardTitle>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -184,3 +185,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    

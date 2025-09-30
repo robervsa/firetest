@@ -30,7 +30,7 @@ import { useToast } from '@/hooks/use-toast';
 
 import { suggestExpenseCategory } from '@/ai/flows/suggest-expense-category';
 import type { ExpenseCategory, Entity } from '@/lib/types';
-import { supabase } from '@/lib/supabase/client';
+import { createClient } from '@/lib/supabase/client';
 
 
 const formSchema = z.object({
@@ -47,6 +47,7 @@ const formSchema = z.object({
 export default function AddExpenseForm() {
   const router = useRouter();
   const { toast } = useToast();
+  const supabase = createClient();
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const [categories, setCategories] = useState<ExpenseCategory[]>([]);
@@ -64,7 +65,7 @@ export default function AddExpenseForm() {
         }
     }
     fetchInitialData();
-  }, []);
+  }, [supabase]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -98,9 +99,15 @@ export default function AddExpenseForm() {
   }
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+        toast({ title: 'Error', description: 'Debes iniciar sesión para registrar un gasto.', variant: 'destructive' });
+        return;
+    }
+    
     const expenseData = {
         ...values,
-        user: 'Usuario Actual', // This would be dynamic in a real app
+        user_id: user.id,
     };
     
     const { error } = await supabase.from('expenses').insert([expenseData]);
@@ -233,3 +240,5 @@ export default function AddExpenseForm() {
     </Form>
   );
 }
+
+    

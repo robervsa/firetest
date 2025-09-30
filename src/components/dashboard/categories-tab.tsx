@@ -27,7 +27,7 @@ import {
 import AddCategoryForm from '@/components/add-category-form';
 import type { ExpenseCategory } from '@/lib/types';
 import { PlusCircle } from 'lucide-react';
-import { supabase } from '@/lib/supabase/client';
+import { createClient } from '@/lib/supabase/client';
 
 const generateRandomColor = () => {
     const hue = Math.floor(Math.random() * 360);
@@ -37,6 +37,7 @@ const generateRandomColor = () => {
 export default function CategoriesTab() {
   const [categories, setCategories] = useState<ExpenseCategory[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const supabase = createClient();
 
   useEffect(() => {
     const fetchAndProcessCategories = async () => {
@@ -51,13 +52,9 @@ export default function CategoriesTab() {
                     color: generateRandomColor()
                 }));
                 
-                // We don't need to await this, it can run in the background
                 supabase.from('categories').upsert(updates).then(({error}) => {
                     if (error) {
                         console.error('Error updating categories with colors:', error);
-                    } else {
-                        // Optionally re-fetch to show new colors, 
-                        // but the realtime subscription should handle this.
                     }
                 });
             }
@@ -72,7 +69,6 @@ export default function CategoriesTab() {
             schema: 'public',
             table: 'categories'
         }, (payload) => {
-            // Re-fetch all data on any change
             fetchAndProcessCategories();
         })
         .subscribe();
@@ -80,10 +76,9 @@ export default function CategoriesTab() {
     return () => {
         supabase.removeChannel(channel);
     }
-  }, []);
+  }, [supabase]);
 
   const handleCategoryAdded = (newCategory: ExpenseCategory) => {
-    // No need to manually add, realtime subscription will handle it.
     setIsDialogOpen(false);
   };
 
@@ -141,3 +136,5 @@ export default function CategoriesTab() {
     </Card>
   );
 }
+
+    

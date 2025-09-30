@@ -18,7 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import type { ExpenseCategory } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/lib/supabase/client';
+import { createClient } from '@/lib/supabase/client';
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -40,6 +40,7 @@ const generateRandomColor = () => {
 
 export default function AddCategoryForm({ onCategoryAdded }: AddCategoryFormProps) {
   const { toast } = useToast();
+  const supabase = createClient();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -49,10 +50,16 @@ export default function AddCategoryForm({ onCategoryAdded }: AddCategoryFormProp
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+        toast({ title: 'Error', description: 'Debes iniciar sesión para agregar una categoría.', variant: 'destructive' });
+        return;
+    }
     const newCategoryData = {
         name: values.name,
         description: values.description,
         color: generateRandomColor(),
+        user_id: user.id
     };
 
     const { data, error } = await supabase
@@ -111,3 +118,5 @@ export default function AddCategoryForm({ onCategoryAdded }: AddCategoryFormProp
     </Form>
   );
 }
+
+    

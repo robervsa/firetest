@@ -20,11 +20,12 @@ import {
 import AddEntityForm from '@/components/add-entity-form';
 import type { Entity } from '@/lib/types';
 import { Users, PlusCircle } from 'lucide-react';
-import { supabase } from '@/lib/supabase/client';
+import { createClient } from '@/lib/supabase/client';
 
 export default function EntitiesTab() {
   const [entities, setEntities] = useState<Entity[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const supabase = createClient();
 
   useEffect(() => {
     const fetchEntities = async () => {
@@ -49,10 +50,9 @@ export default function EntitiesTab() {
     return () => {
         supabase.removeChannel(channel);
     }
-  }, []);
+  }, [supabase]);
 
   const handleEntityAdded = (newEntity: Entity) => {
-    // No need to manually add, realtime subscription will handle it.
     setIsDialogOpen(false);
   };
 
@@ -104,3 +104,5 @@ export default function EntitiesTab() {
     </Card>
   );
 }
+
+    

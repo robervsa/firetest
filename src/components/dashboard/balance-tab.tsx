@@ -19,11 +19,12 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import type { Expense, ExpenseCategory } from '@/lib/types';
-import { supabase } from '@/lib/supabase/client';
+import { createClient } from '@/lib/supabase/client';
 
 export default function BalanceTab({ expenses }: { expenses: Expense[] }) {
   const [chartData, setChartData] = useState<{name: string, value: number, fill: string}[]>([]);
   const [categories, setCategories] = useState<ExpenseCategory[]>([]);
+  const supabase = createClient();
   
   useEffect(() => {
     const fetchCategories = async () => {
@@ -33,7 +34,7 @@ export default function BalanceTab({ expenses }: { expenses: Expense[] }) {
         }
     }
     fetchCategories();
-  }, []);
+  }, [supabase]);
 
   useEffect(() => {
     if (expenses.length > 0 && categories.length > 0) {
@@ -93,7 +94,7 @@ export default function BalanceTab({ expenses }: { expenses: Expense[] }) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Usuario</TableHead>
+                <TableHead>Descripción</TableHead>
                 <TableHead>Categoría</TableHead>
                 <TableHead className="text-right">Monto</TableHead>
               </TableRow>
@@ -102,7 +103,7 @@ export default function BalanceTab({ expenses }: { expenses: Expense[] }) {
               {expenses.slice(0, 5).map((expense) => (
                 <TableRow key={expense.id}>
                   <TableCell>
-                    <div className="font-medium">{expense.user}</div>
+                    <div className="font-medium">{expense.description}</div>
                     <div className="hidden text-sm text-muted-foreground md:inline">
                       {expense.entity}
                     </div>
@@ -120,3 +121,5 @@ export default function BalanceTab({ expenses }: { expenses: Expense[] }) {
     </div>
   );
 }
+
+    
