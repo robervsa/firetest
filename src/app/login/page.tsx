@@ -34,8 +34,9 @@ export default function LoginPage() {
     if (error) {
       setError(error.message)
     } else {
-      router.push('/')
-      router.refresh();
+      // Forzar una recarga completa para asegurar que el middleware
+      // se ejecute con la nueva sesión.
+      window.location.assign('/');
     }
   }
 
