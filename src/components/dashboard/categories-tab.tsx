@@ -117,7 +117,7 @@ export default function CategoriesTab() {
             <TableRow>
               <TableHead>Nombre</TableHead>
               <TableHead>Descripción</TableHead>
-              <TableHead>Color</TableHead>
+              <TableHead></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -131,7 +131,6 @@ export default function CategoriesTab() {
                       className="w-4 h-4 rounded-full" 
                       style={{ backgroundColor: category.color || '#ccc' }}
                     />
-                    <span>{category.color}</span>
                   </div>
                 </TableCell>
               </TableRow>
