@@ -29,7 +29,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 
 import { suggestExpenseCategory } from '@/ai/flows/suggest-expense-category';
-import type { ExpenseCategory, Entity, UserRole, Profile } from '@/lib/types';
+import type { ExpenseCategory, Entity, Profile } from '@/lib/types';
 import { createClient } from '@/lib/supabase/client';
 
 const formSchema = z.object({
@@ -51,7 +51,7 @@ export default function AddExpenseForm() {
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const [categories, setCategories] = useState<ExpenseCategory[]>([]);
   const [entities, setEntities] = useState<Entity[]>([]);
-  const [userRole, setUserRole] = useState<UserRole | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [userEntity, setUserEntity] = useState<Entity | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -63,31 +63,30 @@ export default function AddExpenseForm() {
       entity: '',
     },
   });
-
+  
   useEffect(() => {
     const fetchInitialData = async () => {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        const { data: profile, error: profileError } = await supabase
+        const { data: profileData, error: profileError } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', user.id)
             .single();
 
-        if (profile) {
-            const role = profile.role as UserRole
-            setUserRole(role);
-            if (profile.entity_id) {
+        if (profileData) {
+            setProfile(profileData);
+            if (profileData.entity_id) {
                 const { data: entityData } = await supabase
                     .from('entities')
                     .select('*')
-                    .eq('id', profile.entity_id)
+                    .eq('id', profileData.entity_id)
                     .single();
                 if (entityData) {
                     const mappedEntity = {...entityData, employeeCount: entityData.employee_count, totalExpenses: entityData.total_expenses};
                     setUserEntity(mappedEntity);
-                    if (role === 'employee') {
+                    if (profileData.role === 'employee') {
                         form.setValue('entity', mappedEntity.name);
                     }
                 }
@@ -97,10 +96,12 @@ export default function AddExpenseForm() {
         const { data: categoriesData } = await supabase.from('categories').select('*');
         if (categoriesData) setCategories(categoriesData);
 
-        const { data: entitiesData } = await supabase.from('entities').select('*');
-        if (entitiesData) {
-            const mappedEntities = entitiesData.map(e => ({...e, employeeCount: e.employee_count, totalExpenses: e.total_expenses}));
-            setEntities(mappedEntities);
+        if (profileData?.role === 'admin') {
+          const { data: entitiesData } = await supabase.from('entities').select('*');
+          if (entitiesData) {
+              const mappedEntities = entitiesData.map(e => ({...e, employeeCount: e.employee_count, totalExpenses: e.total_expenses}));
+              setEntities(mappedEntities);
+          }
         }
     }
     fetchInitialData();
@@ -129,7 +130,7 @@ export default function AddExpenseForm() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+    if (!user || !profile) {
         toast({ title: 'Error', description: 'Debes iniciar sesión para registrar un gasto.', variant: 'destructive' });
         return;
     }
@@ -148,9 +149,9 @@ export default function AddExpenseForm() {
         user_id: user.id,
     };
 
-    if (userRole === 'employee' && userEntity) {
+    if (profile.role === 'employee' && userEntity) {
         expenseData.entity = userEntity.name;
-    } else if (values.entity) {
+    } else if (profile.role === 'admin' && values.entity) {
         expenseData.entity = values.entity;
     } else {
         toast({ title: 'Error', description: 'No se pudo determinar la entidad. Por favor, seleccione una.', variant: 'destructive' });
@@ -172,7 +173,7 @@ export default function AddExpenseForm() {
         });
         form.reset();
         setSuggestions([]);
-        if (userEntity && userRole === 'employee') form.setValue('entity', userEntity.name);
+        if (userEntity && profile.role === 'employee') form.setValue('entity', userEntity.name);
         router.push('/my-expenses');
     }
   }
@@ -259,7 +260,7 @@ export default function AddExpenseForm() {
           )}
         />
 
-        {userRole === 'admin' && (
+        {profile?.role === 'admin' && (
           <FormField
             control={form.control}
             name="entity"
