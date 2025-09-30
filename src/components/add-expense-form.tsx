@@ -89,7 +89,9 @@ export default function AddExpenseForm() {
                 if (entityData) {
                     const mappedEntity = {...entityData, employeeCount: entityData.employee_count, totalExpenses: entityData.total_expenses};
                     setUserEntity(mappedEntity);
-                    form.setValue('entity', mappedEntity.name);
+                    if (role === 'employee') {
+                        form.setValue('entity', mappedEntity.name);
+                    }
                 }
             }
 
@@ -122,7 +124,7 @@ export default function AddExpenseForm() {
     
     setIsLoadingSuggestions(true);
     try {
-      const result = await suggestExpenseCategory({ description, amount });
+      const result = await suggestExpenseCategory({ description, amount: Number(amount) });
       const validSuggestions = result.categorySuggestions.filter(cat => categories.some(c => c.name === cat));
       setSuggestions(validSuggestions);
     } catch (error) {
@@ -178,7 +180,7 @@ export default function AddExpenseForm() {
         });
         form.reset();
         setSuggestions([]);
-        if (userEntity) form.setValue('entity', userEntity.name);
+        if (userEntity && userRole === 'employee') form.setValue('entity', userEntity.name);
         router.push('/my-expenses');
     }
   }
@@ -290,6 +292,21 @@ export default function AddExpenseForm() {
               </FormItem>
             )}
           />
+        )}
+
+        {userRole === 'employee' && userEntity && (
+            <FormField
+                control={form.control}
+                name="entity"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Entidad</FormLabel>
+                        <FormControl>
+                            <Input {...field} disabled />
+                        </FormControl>
+                    </FormItem>
+                )}
+            />
         )}
         <Button type="submit" className="w-full">Registrar Gasto</Button>
       </form>
