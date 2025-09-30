@@ -58,14 +58,20 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const protectedPaths = ['/', '/add-expense'];
-  const isProtectedRoute = protectedPaths.some(path => request.nextUrl.pathname.startsWith(path));
+  const { pathname } = request.nextUrl
 
-  if (!user && isProtectedRoute) {
+  // Rutas públicas que no requieren autenticación
+  const publicPaths = ['/login', '/signup'];
+
+  // Si el usuario no está autenticado y la ruta no es pública, redirige a /login
+  if (!user && !publicPaths.includes(pathname)) {
     return NextResponse.redirect(new URL('/login', request.url))
+  }
+  
+  // Si el usuario está autenticado y trata de acceder a login/signup, redirige a la home
+  if (user && publicPaths.includes(pathname)) {
+    return NextResponse.redirect(new URL('/', request.url))
   }
 
   return response
 }
-
-    
