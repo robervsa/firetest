@@ -51,7 +51,7 @@ export default function SignupPage() {
           <CardDescription>
             Ingresa tus datos para crear una nueva cuenta.
           </CardDescription>
-        </Header>
+        </CardHeader>
         <CardContent>
           <form onSubmit={handleSignup} className="grid gap-4">
             <div className="grid gap-2">
