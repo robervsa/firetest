@@ -34,8 +34,7 @@ export default function LoginPage() {
     if (error) {
       setError(error.message)
     } else {
-      // Usar router.push y router.refresh para compatibilidad
-      router.push('/');
+      // Let the middleware handle the redirect
       router.refresh();
     }
   }

@@ -36,9 +36,7 @@ export default function SignupPage() {
     if (error) {
       setError(error.message)
     } else {
-      // Since email verification is off, we can redirect to the home page.
-      // The user session should be active.
-      router.push('/')
+      // Since email verification is off, we can let middleware handle the redirect.
       router.refresh()
     }
   }
