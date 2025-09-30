@@ -23,21 +23,21 @@ export default function DashboardPage() {
     const [loading, setLoading] = useState(true);
     const supabase = createClient();
 
+    const fetchExpenses = async () => {
+        const { data, error } = await supabase
+            .from('expenses')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('Error fetching expenses:', error.message);
+        } else {
+            setExpenses(data as Expense[]);
+        }
+        setLoading(false);
+    };
+
     useEffect(() => {
-        const fetchExpenses = async () => {
-            const { data, error } = await supabase
-                .from('expenses')
-                .select('*')
-                .order('created_at', { ascending: false });
-
-            if (error) {
-                console.error('Error fetching expenses:', error);
-            } else {
-                setExpenses(data as Expense[]);
-            }
-            setLoading(false);
-        };
-
         fetchExpenses();
         
         const channel = supabase.channel('realtime expenses')
@@ -82,9 +82,6 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">${totalSpent.toFixed(2)}</div>
-              {/* <p className="text-xs text-muted-foreground">
-                +20.1% from last month
-              </p> */}
             </CardContent>
           </Card>
           <Card>
@@ -109,9 +106,6 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">+{expenses.length}</div>
-              {/* <p className="text-xs text-muted-foreground">
-                +180.1% from last month
-              </p> */}
             </CardContent>
           </Card>
           <Card>
@@ -120,7 +114,7 @@ export default function DashboardPage() {
                 Ediciones hechas
               </CardTitle>
               <svg
-                xmlns="http://www.w3.org/2000/svg"
+                xmlns="http://www.w a.org/2000/svg"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -135,36 +129,8 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">+12</div>
-              {/* <p className="text-xs text-muted-foreground">
-                +19% from last month
-              </p> */}
             </CardContent>
           </Card>
-          {/* <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Usuarios Activos
-              </CardTitle>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                className="h-4 w-4 text-muted-foreground"
-              >
-                <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-              </svg>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">+573</div>
-              <p className="text-xs text-muted-foreground">
-                +201 since last hour
-              </p>
-            </CardContent>
-          </Card> */}
         </div>
         <Tabs defaultValue="balance">
           <TabsList className="grid w-full grid-cols-4">
@@ -190,5 +156,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
