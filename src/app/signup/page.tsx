@@ -51,7 +51,7 @@ export default function SignupPage() {
           <CardDescription>
             Ingresa tus datos para crear una nueva cuenta.
           </CardDescription>
-        </CardHeader>
+        </Header>
         <CardContent>
           <form onSubmit={handleSignup} className="grid gap-4">
             <div className="grid gap-2">
@@ -66,8 +66,7 @@ export default function SignupPage() {
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="password">Contraseña</Label>
-              <Input
+              <Label htmlFor="password">Contraseña</Label>              <Input
                 id="password"
                 type="password"
                 required
