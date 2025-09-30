@@ -1,7 +1,7 @@
 
 'use client';
 import { useEffect, useState } from 'react';
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Cell } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import {
   Card,
   CardContent,
@@ -21,13 +21,8 @@ import { Badge } from '@/components/ui/badge';
 import type { Expense, ExpenseCategory } from '@/lib/types';
 import { supabase } from '@/lib/supabase/client';
 
-const generateRandomColor = () => {
-    const hue = Math.floor(Math.random() * 360);
-    return `hsl(${hue}, 70%, 50%)`;
-};
-
 export default function BalanceTab({ expenses }: { expenses: Expense[] }) {
-  const [chartData, setChartData] = useState<{name: string, total: number, fill: string}[]>([]);
+  const [chartData, setChartData] = useState<{name: string, value: number, fill: string}[]>([]);
   const [categories, setCategories] = useState<ExpenseCategory[]>([]);
   
   useEffect(() => {
@@ -42,26 +37,20 @@ export default function BalanceTab({ expenses }: { expenses: Expense[] }) {
 
   useEffect(() => {
     if (expenses.length > 0 && categories.length > 0) {
-      const categoryColors: {[key: string]: string} = {};
-      categories.forEach(c => {
-        categoryColors[c.name] = generateRandomColor();
-      });
+      
+      const categoryTotals = categories.map(category => {
+        const total = expenses
+          .filter(expense => expense.category === category.name)
+          .reduce((acc, expense) => acc + expense.amount, 0);
+        
+        return {
+          name: category.name.charAt(0).toUpperCase() + category.name.slice(1),
+          value: total,
+          fill: category.color || '#cccccc' // Use saved color or a default
+        };
+      }).filter(c => c.value > 0); // Only show categories with expenses
 
-      const initialChartData = categories.map(c => ({ 
-          name: c.name.charAt(0).toUpperCase() + c.name.slice(1), 
-          total: 0,
-          fill: categoryColors[c.name]
-      }));
-
-      const data = expenses.reduce((acc, expense) => {
-          const categoryName = expense.category.charAt(0).toUpperCase() + expense.category.slice(1);
-          const category = acc.find(c => c.name === categoryName);
-          if (category) {
-              category.total += expense.amount;
-          }
-          return acc;
-      }, JSON.parse(JSON.stringify(initialChartData)));
-      setChartData(data);
+      setChartData(categoryTotals);
     }
   }, [expenses, categories]);
 
@@ -73,27 +62,23 @@ export default function BalanceTab({ expenses }: { expenses: Expense[] }) {
         </CardHeader>
         <CardContent className="pl-2">
           <ResponsiveContainer width="100%" height={350}>
-            <BarChart data={chartData}>
-              <XAxis
-                dataKey="name"
-                stroke="#888888"
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
-              />
-              <YAxis
-                stroke="#888888"
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={(value) => `$${value}`}
-              />
-              <Bar dataKey="total" radius={[4, 4, 0, 0]}>
+            <PieChart>
+              <Pie
+                data={chartData}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={100}
+                label
+              >
                 {chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  <Cell key={`cell-${index}`} fill={entry.fill} />
                 ))}
-              </Bar>
-            </BarChart>
+              </Pie>
+              <Tooltip formatter={(value: number) => `$${value.toFixed(2)}`} />
+              <Legend />
+            </PieChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>

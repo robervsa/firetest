@@ -33,6 +33,11 @@ interface AddCategoryFormProps {
   onCategoryAdded: (category: ExpenseCategory) => void;
 }
 
+const generateRandomColor = () => {
+    const hue = Math.floor(Math.random() * 360);
+    return `hsl(${hue}, 70%, 50%)`;
+};
+
 export default function AddCategoryForm({ onCategoryAdded }: AddCategoryFormProps) {
   const { toast } = useToast();
   const form = useForm<z.infer<typeof formSchema>>({
@@ -44,11 +49,15 @@ export default function AddCategoryForm({ onCategoryAdded }: AddCategoryFormProp
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    const newCategoryData = {
+        name: values.name,
+        description: values.description,
+        color: generateRandomColor(),
+    };
+
     const { data, error } = await supabase
         .from('categories')
-        .insert([
-            { name: values.name, description: values.description },
-        ])
+        .insert([newCategoryData])
         .select()
         .single();
 

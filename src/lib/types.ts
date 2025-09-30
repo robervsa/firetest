@@ -3,6 +3,7 @@ export interface ExpenseCategory {
   id: string;
   name: string;
   description: string;
+  color?: string;
 }
 
 export interface Expense {
