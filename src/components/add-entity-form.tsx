@@ -70,6 +70,7 @@ export default function AddEntityForm({ onEntityAdded }: AddEntityFormProps) {
             name: data.name,
             employeeCount: data.employee_count,
             totalExpenses: data.total_expenses,
+            user_id: data.user_id,
         }
         onEntityAdded(newEntity);
         toast({
@@ -114,5 +115,3 @@ export default function AddEntityForm({ onEntityAdded }: AddEntityFormProps) {
     </Form>
   );
 }
-
-    

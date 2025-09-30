@@ -60,17 +60,38 @@ export async function updateSession(request: NextRequest) {
 
   const { pathname } = request.nextUrl
 
-  // Rutas públicas que no requieren autenticación
   const publicPaths = ['/login', '/signup'];
 
-  // Si el usuario no está autenticado y la ruta no es pública, redirige a /login
   if (!user && !publicPaths.includes(pathname)) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
   
-  // Si el usuario está autenticado y trata de acceder a login/signup, redirige a la home
-  if (user && publicPaths.includes(pathname)) {
-    return NextResponse.redirect(new URL('/', request.url))
+  if (user) {
+    if (publicPaths.includes(pathname)) {
+      return NextResponse.redirect(new URL('/', request.url))
+    }
+    
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    const role = profile?.role;
+    
+    // Admins can access everything
+    if (role === 'admin') {
+      return response;
+    }
+
+    // Employees have restricted access
+    if (role === 'employee') {
+      const allowedPaths = ['/add-expense', '/my-expenses'];
+      if (pathname === '/' || (!allowedPaths.includes(pathname) && !publicPaths.includes(pathname))) {
+         // Redirect employees from dashboard to their expenses page
+        return NextResponse.redirect(new URL('/my-expenses', request.url));
+      }
+    }
   }
 
   return response

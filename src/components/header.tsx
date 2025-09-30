@@ -6,8 +6,7 @@ import {
   Package2,
   PlusCircle,
   Home,
-  Landmark,
-  History
+  Briefcase
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -24,22 +23,33 @@ import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
+import type { UserRole } from '@/lib/types';
 
 export default function Header() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
+  const [role, setRole] = useState<UserRole | null>(null);
+  const supabase = createClient();
 
   useEffect(() => {
-    const fetchUser = async () => {
-      const supabase = createClient();
-      const { data } = await supabase.auth.getUser();
-      setUser(data.user);
+    const fetchUserAndRole = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+        if (profile) {
+          setRole(profile.role as UserRole);
+        }
+      }
     };
-    fetchUser();
-  }, []);
+    fetchUserAndRole();
+  }, [supabase]);
 
   const handleLogout = async () => {
-    const supabase = createClient();
     await supabase.auth.signOut();
     router.push('/login');
   };
@@ -55,7 +65,7 @@ export default function Header() {
           <span className="sr-only">GastoControl</span>
         </Link>
         <Link
-          href="/"
+          href={role === 'admin' ? '/' : '/my-expenses'}
           className="text-foreground font-bold transition-colors hover:text-foreground"
         >
           GastoControl
@@ -77,10 +87,17 @@ export default function Header() {
               <Package2 className="h-6 w-6 text-primary" />
               <span className="sr-only">GastoControl</span>
             </Link>
-            <Link href="/" className="hover:text-foreground flex items-center gap-2">
-              <Home className="w-5 h-5" />
-              Dashboard
-            </Link>
+            {role === 'admin' ? (
+                <Link href="/" className="hover:text-foreground flex items-center gap-2">
+                  <Home className="w-5 h-5" />
+                  Dashboard
+                </Link>
+            ) : (
+                <Link href="/my-expenses" className="hover:text-foreground flex items-center gap-2">
+                    <Briefcase className="w-5 h-5" />
+                    Mis Gastos
+                </Link>
+            )}
             <Link
               href="/add-expense"
               className="text-muted-foreground hover:text-foreground flex items-center gap-2"
@@ -119,5 +136,3 @@ export default function Header() {
     </header>
   );
 }
-
-    

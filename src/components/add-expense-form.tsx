@@ -125,7 +125,7 @@ export default function AddExpenseForm() {
         });
         form.reset();
         setSuggestions([]);
-        router.push('/');
+        router.push('/my-expenses');
     }
   }
 
@@ -240,5 +240,3 @@ export default function AddExpenseForm() {
     </Form>
   );
 }
-
-    

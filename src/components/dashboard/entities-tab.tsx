@@ -27,14 +27,15 @@ export default function EntitiesTab() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const supabase = createClient();
 
+  const fetchEntities = async () => {
+    const { data, error } = await supabase.from('entities').select('*');
+    if (data) {
+        const mappedData = data.map(e => ({...e, id: e.id, name: e.name, employeeCount: e.employee_count, totalExpenses: e.total_expenses}));
+        setEntities(mappedData);
+    }
+  };
+
   useEffect(() => {
-    const fetchEntities = async () => {
-        const { data, error } = await supabase.from('entities').select('*');
-        if (data) {
-            const mappedData = data.map(e => ({...e, employeeCount: e.employee_count, totalExpenses: e.total_expenses}));
-            setEntities(mappedData);
-        }
-    };
     fetchEntities();
 
     const channel = supabase.channel('realtime entities')
@@ -104,5 +105,3 @@ export default function EntitiesTab() {
     </Card>
   );
 }
-
-    

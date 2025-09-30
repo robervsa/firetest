@@ -1,9 +1,11 @@
 
+
 export interface ExpenseCategory {
   id: string;
   name: string;
   description: string;
   color?: string;
+  user_id?: string;
 }
 
 export interface Expense {
@@ -14,7 +16,6 @@ export interface Expense {
   date: string;
   entity: string;
   user_id: string;
-  user?: string; // This can be removed if not needed.
 }
 
 export interface Entity {
@@ -22,6 +23,7 @@ export interface Entity {
   name: string;
   totalExpenses: number;
   employeeCount: number;
+  user_id?: string;
 }
 
 export type AuditLogAction = 'inicio de sesion' | 'cierre de sesión' | 'añadir gasto' | 'editar gasto';
@@ -35,4 +37,9 @@ export interface AuditLog {
   date: string;
 }
 
-    
+export type UserRole = 'admin' | 'employee';
+
+export interface Profile {
+    id: string;
+    role: UserRole;
+}

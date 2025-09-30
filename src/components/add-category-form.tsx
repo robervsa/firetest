@@ -118,5 +118,3 @@ export default function AddCategoryForm({ onCategoryAdded }: AddCategoryFormProp
     </Form>
   );
 }
-
-    
