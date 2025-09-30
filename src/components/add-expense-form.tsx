@@ -40,7 +40,7 @@ const formSchema = z.object({
     message: 'El monto debe ser un número positivo.',
   }),
   category: z.string().min(1, { message: 'Por favor, seleccione una categoría.' }),
-  entity: z.string().min(1, { message: 'Por favor, seleccione una entidad.' }),
+  entity: z.string().optional(),
 });
 
 export default function AddExpenseForm() {
@@ -69,7 +69,8 @@ export default function AddExpenseForm() {
 
         if (profile) {
             setUserProfile(profile as Profile);
-            setUserRole(profile.role as UserRole);
+            const role = profile.role as UserRole
+            setUserRole(role);
             if (profile.entity_id) {
                 const { data: entityData } = await supabase
                     .from('entities')
@@ -81,6 +82,12 @@ export default function AddExpenseForm() {
                     setUserEntity(mappedEntity);
                     form.setValue('entity', mappedEntity.name);
                 }
+            }
+
+            if (role === 'admin') {
+                form.schema.extend({
+                    entity: z.string().min(1, { message: 'Por favor, seleccione una entidad.' })
+                });
             }
         }
         
@@ -94,7 +101,7 @@ export default function AddExpenseForm() {
         }
     }
     fetchInitialData();
-  }, [supabase]);
+  }, [supabase, form]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -134,10 +141,28 @@ export default function AddExpenseForm() {
         return;
     }
     
-    const expenseData = {
-        ...values,
+    const expenseData: {
+      description: string;
+      amount: number;
+      category: string;
+      entity: string;
+      user_id: string;
+    } = {
+        description: values.description,
+        amount: values.amount,
+        category: values.category,
+        entity: '',
         user_id: user.id,
     };
+
+    if (userRole === 'employee' && userEntity) {
+        expenseData.entity = userEntity.name;
+    } else if (userRole === 'admin' && values.entity) {
+        expenseData.entity = values.entity;
+    } else {
+        toast({ title: 'Error', description: 'No se pudo determinar la entidad.', variant: 'destructive' });
+        return;
+    }
     
     const { error } = await supabase.from('expenses').insert([expenseData]);
     
@@ -241,37 +266,34 @@ export default function AddExpenseForm() {
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="entity"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Entidad</FormLabel>
-              {userRole === 'employee' && userEntity ? (
-                <Input value={userEntity.name} readOnly disabled />
-              ) : (
-              <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccione una entidad" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {entities.map((entity) => (
-                    <SelectItem key={entity.id} value={entity.name}>
-                      {entity.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              )}
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {userRole === 'admin' && (
+          <FormField
+            control={form.control}
+            name="entity"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Entidad</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccione una entidad" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {entities.map((entity) => (
+                      <SelectItem key={entity.id} value={entity.name}>
+                        {entity.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
         <Button type="submit" className="w-full">Registrar Gasto</Button>
       </form>
     </Form>
   );
 }
-
