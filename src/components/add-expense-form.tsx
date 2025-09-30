@@ -259,7 +259,7 @@ export default function AddExpenseForm() {
           )}
         />
 
-        {userRole !== 'employee' && (
+        {userRole === 'admin' && (
           <FormField
             control={form.control}
             name="entity"
@@ -270,7 +270,7 @@ export default function AddExpenseForm() {
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccione una entidad" />
-                    </Trigger>
+                    </SelectTrigger>
                   </FormControl>
                   <SelectContent>
                     {entities.map((entity) => (
