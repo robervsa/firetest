@@ -52,7 +52,6 @@ export default function AddExpenseForm() {
   const [categories, setCategories] = useState<ExpenseCategory[]>([]);
   const [entities, setEntities] = useState<Entity[]>([]);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
-  const [userProfile, setUserProfile] = useState<Profile | null>(null);
   const [userEntity, setUserEntity] = useState<Entity | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -77,7 +76,6 @@ export default function AddExpenseForm() {
             .single();
 
         if (profile) {
-            setUserProfile(profile as Profile);
             const role = profile.role as UserRole
             setUserRole(role);
             if (profile.entity_id) {
@@ -93,12 +91,6 @@ export default function AddExpenseForm() {
                         form.setValue('entity', mappedEntity.name);
                     }
                 }
-            }
-
-            if (role === 'admin') {
-                form.schema.extend({
-                    entity: z.string().min(1, { message: 'Por favor, seleccione una entidad.' })
-                });
             }
         }
         
@@ -161,7 +153,7 @@ export default function AddExpenseForm() {
     } else if (userRole === 'admin' && values.entity) {
         expenseData.entity = values.entity;
     } else {
-        toast({ title: 'Error', description: 'No se pudo determinar la entidad.', variant: 'destructive' });
+        toast({ title: 'Error', description: 'No se pudo determinar la entidad. Por favor, seleccione una.', variant: 'destructive' });
         return;
     }
     
@@ -224,7 +216,7 @@ export default function AddExpenseForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Categoría</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+              <Select onValuechange={field.onChange} value={field.value} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccione una categoría" />
@@ -293,21 +285,7 @@ export default function AddExpenseForm() {
             )}
           />
         )}
-
-        {userRole === 'employee' && userEntity && (
-            <FormField
-                control={form.control}
-                name="entity"
-                render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Entidad</FormLabel>
-                        <FormControl>
-                            <Input {...field} disabled />
-                        </FormControl>
-                    </FormItem>
-                )}
-            />
-        )}
+        
         <Button type="submit" className="w-full">Registrar Gasto</Button>
       </form>
     </Form>
