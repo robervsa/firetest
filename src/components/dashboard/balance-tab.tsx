@@ -1,7 +1,7 @@
 
 'use client';
 import { useEffect, useState } from 'react';
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Cell } from 'recharts';
 import {
   Card,
   CardContent,
@@ -21,8 +21,13 @@ import { Badge } from '@/components/ui/badge';
 import type { Expense, ExpenseCategory } from '@/lib/types';
 import { supabase } from '@/lib/supabase/client';
 
+const generateRandomColor = () => {
+    const hue = Math.floor(Math.random() * 360);
+    return `hsl(${hue}, 70%, 50%)`;
+};
+
 export default function BalanceTab({ expenses }: { expenses: Expense[] }) {
-  const [chartData, setChartData] = useState<{name: string, total: number}[]>([]);
+  const [chartData, setChartData] = useState<{name: string, total: number, fill: string}[]>([]);
   const [categories, setCategories] = useState<ExpenseCategory[]>([]);
   
   useEffect(() => {
@@ -37,7 +42,16 @@ export default function BalanceTab({ expenses }: { expenses: Expense[] }) {
 
   useEffect(() => {
     if (expenses.length > 0 && categories.length > 0) {
-      const initialChartData = categories.map(c => ({ name: c.name.charAt(0).toUpperCase() + c.name.slice(1), total: 0 }));
+      const categoryColors: {[key: string]: string} = {};
+      categories.forEach(c => {
+        categoryColors[c.name] = generateRandomColor();
+      });
+
+      const initialChartData = categories.map(c => ({ 
+          name: c.name.charAt(0).toUpperCase() + c.name.slice(1), 
+          total: 0,
+          fill: categoryColors[c.name]
+      }));
 
       const data = expenses.reduce((acc, expense) => {
           const categoryName = expense.category.charAt(0).toUpperCase() + expense.category.slice(1);
@@ -74,7 +88,11 @@ export default function BalanceTab({ expenses }: { expenses: Expense[] }) {
                 axisLine={false}
                 tickFormatter={(value) => `$${value}`}
               />
-              <Bar dataKey="total" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="total" radius={[4, 4, 0, 0]}>
+                {chartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
