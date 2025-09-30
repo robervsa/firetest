@@ -36,8 +36,10 @@ export default function SignupPage() {
     if (error) {
       setError(error.message)
     } else {
-      setSuccess('¡Registro exitoso! Por favor, revisa tu correo para verificar tu cuenta.')
-      // No redirigir de inmediato, el usuario debe verificar su correo.
+      // Since email verification is off, we can redirect to the home page.
+      // The user session should be active.
+      router.push('/')
+      router.refresh()
     }
   }
 
@@ -90,5 +92,3 @@ export default function SignupPage() {
     </div>
   )
 }
-
-    
