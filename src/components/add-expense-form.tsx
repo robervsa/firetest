@@ -150,7 +150,7 @@ export default function AddExpenseForm() {
 
     if (userRole === 'employee' && userEntity) {
         expenseData.entity = userEntity.name;
-    } else if (userRole === 'admin' && values.entity) {
+    } else if (values.entity) {
         expenseData.entity = values.entity;
     } else {
         toast({ title: 'Error', description: 'No se pudo determinar la entidad. Por favor, seleccione una.', variant: 'destructive' });
@@ -216,7 +216,7 @@ export default function AddExpenseForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Categoría</FormLabel>
-              <Select onValuechange={field.onChange} value={field.value} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccione una categoría" />
@@ -259,7 +259,7 @@ export default function AddExpenseForm() {
           )}
         />
 
-        {userRole === 'admin' && (
+        {userRole !== 'employee' && (
           <FormField
             control={form.control}
             name="entity"
@@ -270,7 +270,7 @@ export default function AddExpenseForm() {
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccione una entidad" />
-                    </SelectTrigger>
+                    </Trigger>
                   </FormControl>
                   <SelectContent>
                     {entities.map((entity) => (
