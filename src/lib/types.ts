@@ -42,4 +42,13 @@ export type UserRole = 'admin' | 'employee';
 export interface Profile {
     id: string;
     role: UserRole;
+    entity_id?: string;
+}
+
+export interface User {
+    id: string;
+    email: string | undefined;
+    role: UserRole;
+    entity_id: string | null;
+    entity_name?: string;
 }

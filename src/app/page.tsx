@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import BalanceTab from '@/components/dashboard/balance-tab';
 import EntitiesTab from '@/components/dashboard/entities-tab';
 import CategoriesTab from '@/components/dashboard/categories-tab';
+import UsersTab from '@/components/dashboard/users-tab';
 import Header from '@/components/header';
 import { useState, useEffect } from 'react';
 import type { Expense } from '@/lib/types';
@@ -166,10 +167,11 @@ export default function DashboardPage() {
           </Card> */}
         </div>
         <Tabs defaultValue="balance">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="balance">Balance</TabsTrigger>
             <TabsTrigger value="entities">Grupos</TabsTrigger>
             <TabsTrigger value="categories">Categorías</TabsTrigger>
+            <TabsTrigger value="users">Usuarios</TabsTrigger>
           </TabsList>
           <TabsContent value="balance">
             <BalanceTab expenses={expenses} />
@@ -179,6 +181,9 @@ export default function DashboardPage() {
           </TabsContent>
           <TabsContent value="categories">
             <CategoriesTab />
+          </TabsContent>
+           <TabsContent value="users">
+            <UsersTab />
           </TabsContent>
         </Tabs>
       </main>

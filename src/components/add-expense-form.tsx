@@ -29,9 +29,8 @@ import {
 import { useToast } from '@/hooks/use-toast';
 
 import { suggestExpenseCategory } from '@/ai/flows/suggest-expense-category';
-import type { ExpenseCategory, Entity } from '@/lib/types';
+import type { ExpenseCategory, Entity, UserRole, Profile } from '@/lib/types';
 import { createClient } from '@/lib/supabase/client';
-
 
 const formSchema = z.object({
   description: z.string().min(2, {
@@ -52,13 +51,43 @@ export default function AddExpenseForm() {
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const [categories, setCategories] = useState<ExpenseCategory[]>([]);
   const [entities, setEntities] = useState<Entity[]>([]);
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
+  const [userProfile, setUserProfile] = useState<Profile | null>(null);
+  const [userEntity, setUserEntity] = useState<Entity | null>(null);
+
 
   useEffect(() => {
     const fetchInitialData = async () => {
-        const { data: categoriesData, error: categoriesError } = await supabase.from('categories').select('*');
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+
+        if (profile) {
+            setUserProfile(profile as Profile);
+            setUserRole(profile.role as UserRole);
+            if (profile.entity_id) {
+                const { data: entityData } = await supabase
+                    .from('entities')
+                    .select('*')
+                    .eq('id', profile.entity_id)
+                    .single();
+                if (entityData) {
+                    const mappedEntity = {...entityData, employeeCount: entityData.employee_count, totalExpenses: entityData.total_expenses};
+                    setUserEntity(mappedEntity);
+                    form.setValue('entity', mappedEntity.name);
+                }
+            }
+        }
+        
+        const { data: categoriesData } = await supabase.from('categories').select('*');
         if (categoriesData) setCategories(categoriesData);
 
-        const { data: entitiesData, error: entitiesError } = await supabase.from('entities').select('*');
+        const { data: entitiesData } = await supabase.from('entities').select('*');
         if (entitiesData) {
             const mappedEntities = entitiesData.map(e => ({...e, employeeCount: e.employee_count, totalExpenses: e.total_expenses}));
             setEntities(mappedEntities);
@@ -125,6 +154,7 @@ export default function AddExpenseForm() {
         });
         form.reset();
         setSuggestions([]);
+        if (userEntity) form.setValue('entity', userEntity.name);
         router.push('/my-expenses');
     }
   }
@@ -168,7 +198,7 @@ export default function AddExpenseForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Categoría</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccione una categoría" />
@@ -217,7 +247,10 @@ export default function AddExpenseForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Entidad</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              {userRole === 'employee' && userEntity ? (
+                <Input value={userEntity.name} readOnly disabled />
+              ) : (
+              <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccione una entidad" />
@@ -231,6 +264,7 @@ export default function AddExpenseForm() {
                   ))}
                 </SelectContent>
               </Select>
+              )}
               <FormMessage />
             </FormItem>
           )}
@@ -240,3 +274,4 @@ export default function AddExpenseForm() {
     </Form>
   );
 }
+
