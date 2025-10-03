@@ -101,7 +101,7 @@ export default function MyExpensesPage() {
                   <TableRow>
                     <TableHead>Descripción</TableHead>
                     <TableHead>Categoría</TableHead>
-                    <TableHead>Entidad</TableHead>
+                    <TableHead>Grupo</TableHead>
                     <TableHead className="text-right">Monto</TableHead>
                     <TableHead className="text-right">Acciones</TableHead>
                   </TableRow>
