@@ -121,7 +121,7 @@ export default function UsersTab() {
       <CardHeader>
         <CardTitle>Gestión de Usuarios</CardTitle>
         <CardDescription>
-          Asigna roles y entidades a los usuarios del sistema.
+          Asigna roles y grupos a los usuarios del sistema.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -133,7 +133,7 @@ export default function UsersTab() {
               <TableRow>
                 <TableHead>Usuario</TableHead>
                 <TableHead>Rol</TableHead>
-                <TableHead>Entidad Asignada</TableHead>
+                <TableHead>Grupo Asignado</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -159,7 +159,7 @@ export default function UsersTab() {
                         onValueChange={(value) => handleEntityChange(user.id, value)}
                       >
                         <SelectTrigger className="w-[200px]">
-                          <SelectValue placeholder="Seleccionar entidad" />
+                          <SelectValue placeholder="Seleccionar grupo" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="none">Sin Asignar</SelectItem>

@@ -135,7 +135,7 @@ export default function DashboardPage() {
         <Tabs defaultValue="balance">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="balance">Balance</TabsTrigger>
-            <TabsTrigger value="entities">Entidades</TabsTrigger>
+            <TabsTrigger value="entities">Grupos</TabsTrigger>
             <TabsTrigger value="categories">Categorías</TabsTrigger>
             <TabsTrigger value="users">Usuarios</TabsTrigger>
           </TabsList>
