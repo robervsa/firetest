@@ -113,7 +113,7 @@ export default function MyExpensesPage() {
                       <TableCell>
                         <Badge variant="outline">{expense.category}</Badge>
                       </TableCell>
-                       <TableCell>{expense.entity}</TableCell>
+                       <TableCell>{expense.group}</TableCell>
                       <TableCell className="text-right">${expense.amount.toFixed(2)}</TableCell>
                        <TableCell className="text-right">
                         <Button variant="ghost" size="icon" disabled>

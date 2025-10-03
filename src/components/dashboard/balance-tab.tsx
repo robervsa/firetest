@@ -105,7 +105,7 @@ export default function BalanceTab({ expenses }: { expenses: Expense[] }) {
                   <TableCell>
                     <div className="font-medium">{expense.description}</div>
                     <div className="hidden text-sm text-muted-foreground md:inline">
-                      {expense.entity}
+                      {expense.group}
                     </div>
                   </TableCell>
                   <TableCell>
@@ -121,5 +121,3 @@ export default function BalanceTab({ expenses }: { expenses: Expense[] }) {
     </div>
   );
 }
-
-    

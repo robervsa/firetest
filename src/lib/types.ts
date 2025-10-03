@@ -14,11 +14,11 @@ export interface Expense {
   amount: number;
   category: ExpenseCategory['name'];
   date: string;
-  entity: string;
+  group: string;
   user_id: string;
 }
 
-export interface Entity {
+export interface Group {
   id: string;
   name: string;
   totalExpenses: number;
@@ -42,13 +42,13 @@ export type UserRole = 'admin' | 'employee';
 export interface Profile {
     id: string;
     role: UserRole;
-    entity_id?: string;
+    group_id?: string;
 }
 
 export interface User {
     id: string;
     email: string | undefined;
     role: UserRole;
-    entity_id: string | null;
-    entity_name?: string;
+    group_id: string | null;
+    group_name?: string;
 }

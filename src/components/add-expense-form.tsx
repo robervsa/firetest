@@ -29,7 +29,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 
 import { suggestExpenseCategory } from '@/ai/flows/suggest-expense-category';
-import type { ExpenseCategory, Entity, Profile } from '@/lib/types';
+import type { ExpenseCategory, Group, Profile } from '@/lib/types';
 import { createClient } from '@/lib/supabase/client';
 
 const formSchema = z.object({
@@ -40,29 +40,30 @@ const formSchema = z.object({
     message: 'El monto debe ser un número positivo.',
   }),
   category: z.string().min(1, { message: 'Por favor, seleccione una categoría.' }),
-  entity: z.string().optional(),
+  group: z.string().optional(),
 });
 
 export default function AddExpenseForm() {
   const router = useRouter();
   const { toast } = useToast();
   const supabase = createClient();
-  const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
-  const [categories, setCategories] = useState<ExpenseCategory[]>([]);
-  const [entities, setEntities] = useState<Entity[]>([]);
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [userEntity, setUserEntity] = useState<Entity | null>(null);
-
+  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       description: '',
       amount: 0,
       category: '',
-      entity: '',
+      group: '',
     },
   });
+
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+  const [categories, setCategories] = useState<ExpenseCategory[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [userGroup, setUserGroup] = useState<Group | null>(null);
   
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -77,17 +78,17 @@ export default function AddExpenseForm() {
 
         if (profileData) {
             setProfile(profileData);
-            if (profileData.entity_id) {
-                const { data: entityData } = await supabase
-                    .from('entities')
+            if (profileData.group_id) {
+                const { data: groupData } = await supabase
+                    .from('groups')
                     .select('*')
-                    .eq('id', profileData.entity_id)
+                    .eq('id', profileData.group_id)
                     .single();
-                if (entityData) {
-                    const mappedEntity = {...entityData, employeeCount: entityData.employee_count, totalExpenses: entityData.total_expenses};
-                    setUserEntity(mappedEntity);
+                if (groupData) {
+                    const mappedGroup = {...groupData, employeeCount: groupData.employee_count, totalExpenses: groupData.total_expenses};
+                    setUserGroup(mappedGroup);
                     if (profileData.role === 'employee') {
-                        form.setValue('entity', mappedEntity.name);
+                        form.setValue('group', mappedGroup.name);
                     }
                 }
             }
@@ -97,10 +98,10 @@ export default function AddExpenseForm() {
         if (categoriesData) setCategories(categoriesData);
 
         if (profileData?.role === 'admin') {
-          const { data: entitiesData } = await supabase.from('entities').select('*');
-          if (entitiesData) {
-              const mappedEntities = entitiesData.map(e => ({...e, employeeCount: e.employee_count, totalExpenses: e.total_expenses}));
-              setEntities(mappedEntities);
+          const { data: groupsData } = await supabase.from('groups').select('*');
+          if (groupsData) {
+              const mappedGroups = groupsData.map(e => ({...e, employeeCount: e.employee_count, totalExpenses: e.total_expenses}));
+              setGroups(mappedGroups);
           }
         }
     }
@@ -139,22 +140,22 @@ export default function AddExpenseForm() {
       description: string;
       amount: number;
       category: string;
-      entity: string;
+      group: string;
       user_id: string;
     } = {
         description: values.description,
         amount: values.amount,
         category: values.category,
-        entity: '',
+        group: '',
         user_id: user.id,
     };
 
-    if (profile.role === 'employee' && userEntity) {
-        expenseData.entity = userEntity.name;
-    } else if (profile.role === 'admin' && values.entity) {
-        expenseData.entity = values.entity;
+    if (profile.role === 'employee' && userGroup) {
+        expenseData.group = userGroup.name;
+    } else if (profile.role === 'admin' && values.group) {
+        expenseData.group = values.group;
     } else {
-        toast({ title: 'Error', description: 'No se pudo determinar la entidad. Por favor, seleccione una.', variant: 'destructive' });
+        toast({ title: 'Error', description: 'No se pudo determinar el grupo. Por favor, seleccione uno.', variant: 'destructive' });
         return;
     }
     
@@ -173,7 +174,7 @@ export default function AddExpenseForm() {
         });
         form.reset();
         setSuggestions([]);
-        if (userEntity && profile.role === 'employee') form.setValue('entity', userEntity.name);
+        if (userGroup && profile.role === 'employee') form.setValue('group', userGroup.name);
         router.push('/my-expenses');
     }
   }
@@ -263,20 +264,20 @@ export default function AddExpenseForm() {
         {profile?.role === 'admin' && (
           <FormField
             control={form.control}
-            name="entity"
+            name="group"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Entidad</FormLabel>
+                <FormLabel>Grupo</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Seleccione una entidad" />
+                      <SelectValue placeholder="Seleccione un grupo" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {entities.map((entity) => (
-                      <SelectItem key={entity.id} value={entity.name}>
-                        {entity.name}
+                    {groups.map((group) => (
+                      <SelectItem key={group.id} value={group.name}>
+                        {group.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
