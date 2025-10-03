@@ -47,7 +47,8 @@ export default function AddExpenseForm() {
   const router = useRouter();
   const { toast } = useToast();
   const supabase = createClient();
-  
+  const [profile, setProfile] = useState<Profile | null>(null);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -57,12 +58,11 @@ export default function AddExpenseForm() {
       entity: '',
     },
   });
-
+  
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const [categories, setCategories] = useState<ExpenseCategory[]>([]);
   const [entities, setEntities] = useState<Entity[]>([]);
-  const [profile, setProfile] = useState<Profile | null>(null);
   const [userEntity, setUserEntity] = useState<Entity | null>(null);
   
   useEffect(() => {
@@ -154,8 +154,11 @@ export default function AddExpenseForm() {
         expenseData.entity = userEntity.name;
     } else if (profile.role === 'admin' && values.entity) {
         expenseData.entity = values.entity;
+    } else if (profile.role === 'admin' && !values.entity) {
+        toast({ title: 'Error', description: 'Como administrador, debe seleccionar una entidad.', variant: 'destructive' });
+        return;
     } else {
-        toast({ title: 'Error', description: 'No se pudo determinar la entidad. Por favor, seleccione una.', variant: 'destructive' });
+        toast({ title: 'Error', description: 'No se pudo determinar la entidad. Inténtelo de nuevo.', variant: 'destructive' });
         return;
     }
     
@@ -175,7 +178,7 @@ export default function AddExpenseForm() {
         form.reset();
         setSuggestions([]);
         if (userEntity && profile.role === 'employee') form.setValue('entity', userEntity.name);
-        router.push('/my-expenses');
+        router.push(profile.role === 'admin' ? '/' : '/my-expenses');
     }
   }
 
@@ -260,7 +263,7 @@ export default function AddExpenseForm() {
             </FormItem>
           )}
         />
-
+        
         {profile?.role === 'admin' && (
           <FormField
             control={form.control}
@@ -288,7 +291,17 @@ export default function AddExpenseForm() {
           />
         )}
         
-        <Button type="submit" className="w-full">Registrar Gasto</Button>
+        <div className="flex flex-col-reverse sm:flex-row gap-2">
+            <Button 
+                type="button" 
+                variant="outline" 
+                className="w-full"
+                onClick={() => router.push(profile?.role === 'admin' ? '/' : '/my-expenses')}
+            >
+                Cancelar
+            </Button>
+            <Button type="submit" className="w-full">Registrar Gasto</Button>
+        </div>
       </form>
     </Form>
   );
