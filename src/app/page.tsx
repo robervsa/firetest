@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import BalanceTab from '@/components/dashboard/balance-tab';
-import GroupsTab from '@/components/dashboard/groups-tab';
+import EntitiesTab from '@/components/dashboard/entities-tab';
 import CategoriesTab from '@/components/dashboard/categories-tab';
 import UsersTab from '@/components/dashboard/users-tab';
 import Header from '@/components/header';
@@ -135,15 +135,15 @@ export default function DashboardPage() {
         <Tabs defaultValue="balance">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="balance">Balance</TabsTrigger>
-            <TabsTrigger value="groups">Grupos</TabsTrigger>
+            <TabsTrigger value="entities">Entidades</TabsTrigger>
             <TabsTrigger value="categories">Categorías</TabsTrigger>
             <TabsTrigger value="users">Usuarios</TabsTrigger>
           </TabsList>
           <TabsContent value="balance">
             <BalanceTab expenses={expenses} />
           </TabsContent>
-          <TabsContent value="groups">
-            <GroupsTab />
+          <TabsContent value="entities">
+            <EntitiesTab />
           </TabsContent>
           <TabsContent value="categories">
             <CategoriesTab />

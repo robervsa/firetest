@@ -27,31 +27,31 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { createClient } from '@/lib/supabase/client';
-import type { User, Group } from '@/lib/types';
+import type { User, Entity } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 
 export default function UsersTab() {
   const [users, setUsers] = useState<User[]>([]);
-  const [groups, setGroups] = useState<Group[]>([]);
+  const [entities, setEntities] = useState<Entity[]>([]);
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
   const { toast } = useToast();
 
-  const fetchUsersAndGroups = async () => {
+  const fetchUsersAndEntities = async () => {
     setLoading(true);
-    // Fetch all groups first
-    const { data: groupsData, error: groupsError } = await supabase
-      .from('groups')
+    // Fetch all entities first
+    const { data: entitiesData, error: entitiesError } = await supabase
+      .from('entities')
       .select('*');
 
-    if (groupsError) {
-      console.error('Error fetching groups:', groupsError);
-      toast({ title: 'Error', description: 'No se pudieron cargar los grupos.', variant: 'destructive' });
+    if (entitiesError) {
+      console.error('Error fetching entities:', entitiesError);
+      toast({ title: 'Error', description: 'No se pudieron cargar las entidades.', variant: 'destructive' });
       setLoading(false);
       return;
     }
-    const mappedGroups = groupsData.map(e => ({ ...e, employeeCount: e.employee_count, totalExpenses: e.total_expenses }));
-    setGroups(mappedGroups);
+    const mappedEntities = entitiesData.map(e => ({ ...e, employeeCount: e.employee_count, totalExpenses: e.total_expenses }));
+    setEntities(mappedEntities);
 
     // Fetch users and their profiles
     const { data: usersData, error: usersError } = await supabase
@@ -67,7 +67,7 @@ export default function UsersTab() {
 
     const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, group_id');
+        .select('id, entity_id');
     
     if (profilesError) {
         console.error('Error fetching profiles:', profilesError);
@@ -75,13 +75,13 @@ export default function UsersTab() {
     
     const combinedUsers: User[] = usersData.map(user => {
       const profile = profilesData?.find(p => p.id === user.id);
-      const group = mappedGroups.find(e => e.id === profile?.group_id);
+      const entity = mappedEntities.find(e => e.id === profile?.entity_id);
       return {
         id: user.id,
         email: user.email,
         role: user.role,
-        group_id: profile?.group_id || null,
-        group_name: group?.name || 'Sin Asignar',
+        entity_id: profile?.entity_id || null,
+        entity_name: entity?.name || 'Sin Asignar',
       };
     });
 
@@ -90,22 +90,22 @@ export default function UsersTab() {
   };
   
   useEffect(() => {
-    fetchUsersAndGroups();
+    fetchUsersAndEntities();
   }, [supabase, toast]);
 
-  const handleGroupChange = async (userId: string, groupId: string) => {
+  const handleEntityChange = async (userId: string, entityId: string) => {
     const { error } = await supabase
       .from('profiles')
-      .update({ group_id: groupId === 'none' ? null : groupId })
+      .update({ entity_id: entityId === 'none' ? null : entityId })
       .eq('id', userId);
 
     if (error) {
-      toast({ title: 'Error', description: 'No se pudo actualizar el grupo del usuario.', variant: 'destructive' });
+      toast({ title: 'Error', description: 'No se pudo actualizar la entidad del usuario.', variant: 'destructive' });
     } else {
-      toast({ title: 'Éxito', description: 'Grupo actualizado correctamente.' });
+      toast({ title: 'Éxito', description: 'Entidad actualizada correctamente.' });
       setUsers(users.map(u => 
         u.id === userId 
-          ? { ...u, group_id: groupId, group_name: groups.find(e => e.id === groupId)?.name || 'Sin Asignar' }
+          ? { ...u, entity_id: entityId, entity_name: entities.find(e => e.id === entityId)?.name || 'Sin Asignar' }
           : u
       ));
     }
@@ -121,7 +121,7 @@ export default function UsersTab() {
       <CardHeader>
         <CardTitle>Gestión de Usuarios</CardTitle>
         <CardDescription>
-          Asigna roles y grupos a los usuarios del sistema.
+          Asigna roles y entidades a los usuarios del sistema.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -133,7 +133,7 @@ export default function UsersTab() {
               <TableRow>
                 <TableHead>Usuario</TableHead>
                 <TableHead>Rol</TableHead>
-                <TableHead>Grupo Asignado</TableHead>
+                <TableHead>Entidad Asignada</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -155,17 +155,17 @@ export default function UsersTab() {
                   <TableCell>
                     {user.role === 'employee' ? (
                       <Select
-                        defaultValue={user.group_id || 'none'}
-                        onValueChange={(value) => handleGroupChange(user.id, value)}
+                        defaultValue={user.entity_id || 'none'}
+                        onValueChange={(value) => handleEntityChange(user.id, value)}
                       >
                         <SelectTrigger className="w-[200px]">
-                          <SelectValue placeholder="Seleccionar grupo" />
+                          <SelectValue placeholder="Seleccionar entidad" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="none">Sin Asignar</SelectItem>
-                          {groups.map(group => (
-                            <SelectItem key={group.id} value={group.id}>
-                              {group.name}
+                          {entities.map(entity => (
+                            <SelectItem key={entity.id} value={entity.id}>
+                              {entity.name}
                             </SelectItem>
                           ))}
                         </SelectContent>

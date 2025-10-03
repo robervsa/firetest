@@ -1,5 +1,4 @@
 
-
 export interface ExpenseCategory {
   id: string;
   name: string;
@@ -14,11 +13,11 @@ export interface Expense {
   amount: number;
   category: ExpenseCategory['name'];
   date: string;
-  group: string;
+  entity: string;
   user_id: string;
 }
 
-export interface Group {
+export interface Entity {
   id: string;
   name: string;
   totalExpenses: number;
@@ -42,13 +41,13 @@ export type UserRole = 'admin' | 'employee';
 export interface Profile {
     id: string;
     role: UserRole;
-    group_id?: string;
+    entity_id?: string;
 }
 
 export interface User {
     id: string;
     email: string | undefined;
     role: UserRole;
-    group_id: string | null;
-    group_name?: string;
+    entity_id: string | null;
+    entity_name?: string;
 }
