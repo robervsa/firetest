@@ -42,7 +42,7 @@ const formSchema = z.object({
   }),
   category: z.string().min(1, { message: 'Por favor, seleccione una categoría.' }),
   entity: z.string().optional(),
-  receipt: z.instanceof(File).optional(),
+  receipt: z.instanceof(File, { message: 'El comprobante es obligatorio.' }),
 });
 
 export default function AddExpenseForm() {
@@ -138,7 +138,7 @@ export default function AddExpenseForm() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      form.setValue('receipt', file);
+      form.setValue('receipt', file, { shouldValidate: true });
       const reader = new FileReader();
       reader.onloadend = () => {
         setReceiptPreview(reader.result as string);
@@ -148,7 +148,7 @@ export default function AddExpenseForm() {
   };
 
   const clearReceipt = () => {
-    form.setValue('receipt', undefined);
+    form.setValue('receipt', undefined, { shouldValidate: true });
     setReceiptPreview(null);
     if(fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -183,6 +183,10 @@ export default function AddExpenseForm() {
 
         const { data: urlData } = supabase.storage.from('receipts').getPublicUrl(filePath);
         receiptUrl = urlData.publicUrl;
+    } else {
+        toast({ title: 'Error', description: 'El comprobante es obligatorio.', variant: 'destructive' });
+        setIsSubmitting(false);
+        return;
     }
     
     const expenseData: {
@@ -191,7 +195,7 @@ export default function AddExpenseForm() {
       category: string;
       entity: string;
       user_id: string;
-      receipt_url?: string;
+      receipt_url: string;
     } = {
         description: values.description,
         amount: values.amount,
@@ -350,7 +354,7 @@ export default function AddExpenseForm() {
           name="receipt"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Comprobante (Opcional)</FormLabel>
+              <FormLabel>Comprobante</FormLabel>
                 <FormControl>
                     <div className="flex items-center gap-4">
                         <Input 
