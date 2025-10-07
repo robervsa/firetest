@@ -101,13 +101,13 @@ export default function Header() {
               <span className="sr-only">GastoControl</span>
             </Link>
             {role === 'admin' && (
-              <Link href="/" className="text-muted-foreground hover:text-foreground">
-                <LayoutDashboard className="h-5 w-5 inline-block mr-2" />
+              <Link href="/" className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground">
+                <LayoutDashboard className="h-5 w-5" />
                 Dashboard
               </Link>
             )}
-             <Link href="/my-expenses" className="text-muted-foreground hover:text-foreground">
-                <Briefcase className="h-5 w-5 inline-block mr-2" />
+             <Link href="/my-expenses" className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground">
+                <Briefcase className="h-5 w-5" />
                 Mis Gastos
             </Link>
           </nav>
