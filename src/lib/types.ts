@@ -1,4 +1,5 @@
 
+
 export interface ExpenseCategory {
   id: string;
   name: string;
@@ -15,6 +16,7 @@ export interface Expense {
   date: string;
   entity: string;
   user_id: string;
+  receipt_url?: string;
 }
 
 export interface Entity {

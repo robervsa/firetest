@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Upload } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
@@ -41,6 +41,7 @@ const formSchema = z.object({
   }),
   category: z.string().min(1, { message: 'Por favor, seleccione una categoría.' }),
   entity: z.string().optional(),
+  receipt: z.instanceof(File).optional(),
 });
 
 export default function AddExpenseForm() {
@@ -61,6 +62,7 @@ export default function AddExpenseForm() {
   
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [categories, setCategories] = useState<ExpenseCategory[]>([]);
   const [entities, setEntities] = useState<Entity[]>([]);
   const [userEntity, setUserEntity] = useState<Entity | null>(null);
@@ -130,10 +132,32 @@ export default function AddExpenseForm() {
   }
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    setIsSubmitting(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user || !profile) {
         toast({ title: 'Error', description: 'Debes iniciar sesión para registrar un gasto.', variant: 'destructive' });
+        setIsSubmitting(false);
         return;
+    }
+
+    let receiptUrl: string | undefined = undefined;
+
+    if (values.receipt) {
+        const file = values.receipt;
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        const { error: uploadError } = await supabase.storage.from('receipts').upload(filePath, file);
+
+        if (uploadError) {
+            toast({ title: 'Error al subir imagen', description: uploadError.message, variant: 'destructive' });
+            setIsSubmitting(false);
+            return;
+        }
+
+        const { data: urlData } = supabase.storage.from('receipts').getPublicUrl(filePath);
+        receiptUrl = urlData.publicUrl;
     }
     
     const expenseData: {
@@ -142,12 +166,14 @@ export default function AddExpenseForm() {
       category: string;
       entity: string;
       user_id: string;
+      receipt_url?: string;
     } = {
         description: values.description,
         amount: values.amount,
         category: values.category,
         entity: '',
         user_id: user.id,
+        receipt_url: receiptUrl,
     };
 
     if (profile.role === 'employee' && userEntity) {
@@ -156,9 +182,11 @@ export default function AddExpenseForm() {
         expenseData.entity = values.entity;
     } else if (profile.role === 'admin' && !values.entity) {
         toast({ title: 'Error', description: 'Como administrador, debe seleccionar una entidad.', variant: 'destructive' });
+        setIsSubmitting(false);
         return;
     } else {
         toast({ title: 'Error', description: 'No se pudo determinar la entidad. Inténtelo de nuevo.', variant: 'destructive' });
+        setIsSubmitting(false);
         return;
     }
     
@@ -178,8 +206,9 @@ export default function AddExpenseForm() {
         form.reset();
         setSuggestions([]);
         if (userEntity && profile.role === 'employee') form.setValue('entity', userEntity.name);
-        router.push(profile.role === 'admin' ? '/' : '/my-expenses');
+        router.push(profile?.role === 'admin' ? '/' : '/my-expenses');
     }
+    setIsSubmitting(false);
   }
 
   return (
@@ -290,6 +319,27 @@ export default function AddExpenseForm() {
             )}
           />
         )}
+
+        <FormField
+          control={form.control}
+          name="receipt"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Comprobante (Opcional)</FormLabel>
+              <FormControl>
+                <Input 
+                    type="file" 
+                    accept="image/png, image/jpeg, image/gif"
+                    onChange={(e) => field.onChange(e.target.files ? e.target.files[0] : null)}
+                />
+              </FormControl>
+              <FormDescription>
+                Sube una imagen del ticket o factura.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         
         <div className="flex flex-col-reverse sm:flex-row gap-2">
             <Button 
@@ -300,7 +350,10 @@ export default function AddExpenseForm() {
             >
                 Cancelar
             </Button>
-            <Button type="submit" className="w-full">Registrar Gasto</Button>
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                Registrar Gasto
+            </Button>
         </div>
       </form>
     </Form>
