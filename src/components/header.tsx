@@ -6,7 +6,8 @@ import {
   Package2,
   PlusCircle,
   Home,
-  Briefcase
+  Briefcase,
+  LayoutDashboard
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -65,10 +66,18 @@ export default function Header() {
           <span className="sr-only">GastoControl</span>
         </Link>
         <Link
-          href={role === 'admin' ? '/' : '/my-expenses'}
+          href="/"
           className="text-foreground font-bold transition-colors hover:text-foreground"
         >
           GastoControl
+        </Link>
+        {role === 'admin' && (
+           <Link href="/" className="text-muted-foreground transition-colors hover:text-foreground">
+            Dashboard
+          </Link>
+        )}
+        <Link href="/my-expenses" className="text-muted-foreground transition-colors hover:text-foreground">
+          Mis Gastos
         </Link>
       </nav>
       <Sheet>
@@ -87,17 +96,16 @@ export default function Header() {
               <Package2 className="h-6 w-6 text-primary" />
               <span className="sr-only">GastoControl</span>
             </Link>
-            {role === 'admin' ? (
+            {role === 'admin' && (
                 <Link href="/" className="hover:text-foreground flex items-center gap-2">
-                  <Home className="w-5 h-5" />
+                  <LayoutDashboard className="w-5 h-5" />
                   Dashboard
                 </Link>
-            ) : (
-                <Link href="/my-expenses" className="hover:text-foreground flex items-center gap-2">
-                    <Briefcase className="w-5 h-5" />
-                    Mis Gastos
-                </Link>
             )}
+            <Link href="/my-expenses" className="hover:text-foreground flex items-center gap-2">
+                <Briefcase className="w-5 h-5" />
+                Mis Gastos
+            </Link>
             <Link
               href="/add-expense"
               className="text-muted-foreground hover:text-foreground flex items-center gap-2"
