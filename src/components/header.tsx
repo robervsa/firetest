@@ -102,7 +102,7 @@ export default function Header() {
                   Dashboard
                 </Link>
             )}
-            <Link href="/my-expenses" className="hover:text-foreground flex items-center gap-2">
+            <Link href="/my-expenses" className="text-muted-foreground hover:text-foreground flex items-center gap-2">
                 <Briefcase className="w-5 h-5" />
                 Mis Gastos
             </Link>
