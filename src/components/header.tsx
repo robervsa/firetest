@@ -96,9 +96,15 @@ export default function Header() {
               <Package2 className="h-6 w-6 text-primary" />
               <span className="sr-only">GastoControl</span>
             </Link>
-            <Link href="/" className="hover:text-foreground flex items-center gap-2">
-                <LayoutDashboard className="w-5 h-5" />
-                Dashboard
+            {role === 'admin' && (
+              <Link href="/" className="hover:text-foreground flex items-center gap-2">
+                  <LayoutDashboard className="w-5 h-5" />
+                  Dashboard
+              </Link>
+            )}
+            <Link href="/my-expenses" className="text-muted-foreground hover:text-foreground flex items-center gap-2">
+                <Briefcase className="w-5 h-5" />
+                Mis Gastos
             </Link>
             <Link
               href="/add-expense"
