@@ -1,12 +1,13 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { Loader2, Upload } from 'lucide-react';
+import { Loader2, Camera, X as XIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -49,6 +50,9 @@ export default function AddExpenseForm() {
   const { toast } = useToast();
   const supabase = createClient();
   const [profile, setProfile] = useState<Profile | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
+
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -130,6 +134,27 @@ export default function AddExpenseForm() {
       setIsLoadingSuggestions(false);
     }
   }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      form.setValue('receipt', file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setReceiptPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const clearReceipt = () => {
+    form.setValue('receipt', undefined);
+    setReceiptPreview(null);
+    if(fileInputRef.current) {
+        fileInputRef.current.value = '';
+    }
+  };
+
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
@@ -326,15 +351,50 @@ export default function AddExpenseForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Comprobante (Opcional)</FormLabel>
-              <FormControl>
-                <Input 
-                    type="file" 
-                    accept="image/png, image/jpeg, image/gif"
-                    onChange={(e) => field.onChange(e.target.files ? e.target.files[0] : null)}
-                />
+                <FormControl>
+                    <div className="flex items-center gap-4">
+                        <Input 
+                            type="file" 
+                            accept="image/*"
+                            capture="environment"
+                            onChange={handleFileChange}
+                            className="hidden"
+                            ref={fileInputRef}
+                        />
+                        <Button 
+                            type="button" 
+                            variant="outline" 
+                            onClick={() => fileInputRef.current?.click()}
+                        >
+                            <Camera className="mr-2 h-4 w-4" />
+                            Capturar / Subir
+                        </Button>
+                    </div>
               </FormControl>
+
+                {receiptPreview && (
+                    <div className="mt-4 relative w-48 h-48 border rounded-md">
+                        <Image
+                            src={receiptPreview}
+                            alt="Vista previa del comprobante"
+                            layout="fill"
+                            objectFit="cover"
+                            className="rounded-md"
+                        />
+                        <Button 
+                            type="button" 
+                            variant="destructive" 
+                            size="icon" 
+                            className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+                            onClick={clearReceipt}
+                        >
+                            <XIcon className="h-4 w-4" />
+                        </Button>
+                    </div>
+                )}
+
               <FormDescription>
-                Sube una imagen del ticket o factura.
+                Toma una foto del ticket o súbelo desde tu galería.
               </FormDescription>
               <FormMessage />
             </FormItem>
