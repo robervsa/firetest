@@ -24,6 +24,18 @@ import { Pencil, Trash2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import type { Expense } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+
 
 export default function MyExpensesPage() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -69,8 +81,6 @@ export default function MyExpensesPage() {
   }, [supabase]);
 
   const handleDelete = async (id: string) => {
-      if (!confirm('¿Estás seguro de que quieres eliminar este gasto?')) return;
-      
       const { error } = await supabase.from('expenses').delete().eq('id', id);
 
       if (error) {
@@ -101,7 +111,7 @@ export default function MyExpensesPage() {
                   <TableRow>
                     <TableHead>Descripción</TableHead>
                     <TableHead>Categoría</TableHead>
-                    <TableHead>Grupo</TableHead>
+                    <TableHead>Entidad</TableHead>
                     <TableHead className="text-right">Monto</TableHead>
                     <TableHead className="text-right">Acciones</TableHead>
                   </TableRow>
@@ -119,9 +129,26 @@ export default function MyExpensesPage() {
                         <Button variant="ghost" size="icon" disabled>
                             <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleDelete(expense.id)}>
-                            <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Esta acción no se puede deshacer. Esto eliminará permanentemente el gasto
+                                de nuestros servidores.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDelete(expense.id)}>Continuar</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </TableCell>
                     </TableRow>
                   ))}
