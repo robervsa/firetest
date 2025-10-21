@@ -4,10 +4,10 @@
 import { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { createClient } from '@/lib/supabase/client';
-import type { Entity, Expense, Income } from '@/lib/types';
-import { DollarSign, ShoppingCart, Scale } from 'lucide-react';
+import type { Entity } from '@/lib/types';
+import { DollarSign, ShoppingCart, Scale, Building } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface ChartData {
     name: string;
@@ -31,9 +31,12 @@ export default function IncomeExpenseDashboard() {
                 setEntities(mappedData);
                 if (mappedData.length > 0) {
                     setSelectedEntity(mappedData[0].id);
+                } else {
+                    setLoading(false);
                 }
             } else if (error) {
                 console.error("Error fetching entities:", error.message);
+                setLoading(false);
             }
         };
         fetchEntities();
@@ -41,7 +44,8 @@ export default function IncomeExpenseDashboard() {
 
     useEffect(() => {
         if (!selectedEntity) {
-            setLoading(false);
+            setChartData([]);
+            setTotals({incomes: 0, expenses: 0, balance: 0});
             return
         };
 
@@ -93,19 +97,22 @@ export default function IncomeExpenseDashboard() {
                     <CardDescription>Seleccione una entidad para ver su balance de ingresos y egresos.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                    <div className="w-full max-w-xs">
-                         <Select onValueChange={setSelectedEntity} value={selectedEntity || ''}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Seleccionar entidad" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {entities.map(entity => (
-                                    <SelectItem key={entity.id} value={entity.id}>
-                                        {entity.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                         {entities.map(entity => (
+                            <Card 
+                                key={entity.id} 
+                                className={cn(
+                                    "cursor-pointer hover:border-primary transition-all",
+                                    selectedEntity === entity.id && "border-2 border-primary shadow-lg"
+                                )}
+                                onClick={() => setSelectedEntity(entity.id)}
+                            >
+                                <CardContent className="flex flex-col items-center justify-center p-4 gap-2 text-center">
+                                    <Building className="h-8 w-8 text-muted-foreground" />
+                                    <p className="text-sm font-semibold">{entity.name}</p>
+                                </CardContent>
+                            </Card>
+                        ))}
                     </div>
 
                     {loading ? (
@@ -140,7 +147,11 @@ export default function IncomeExpenseDashboard() {
                                 </CardContent>
                             </Card>
                         </div>
-                    ) : null}
+                    ) : (
+                        <div className="text-center text-muted-foreground py-8">
+                            <p>No hay entidades creadas. Empiece por agregar una.</p>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
 
