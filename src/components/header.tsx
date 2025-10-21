@@ -7,7 +7,8 @@ import {
   Package2,
   PlusCircle,
   LayoutDashboard,
-  Briefcase
+  Briefcase,
+  DollarSign,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -57,7 +58,7 @@ export default function Header() {
   
   return (
     <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6 z-50">
-      <nav className="flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
+      <nav className="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
         <Link
           href="/"
           className="flex items-center gap-2 text-lg font-semibold md:text-base"
@@ -114,7 +115,15 @@ export default function Header() {
         </SheetContent>
       </Sheet>
       <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
-        <div className="ml-auto flex-1 sm:flex-initial">
+        <div className="ml-auto flex-1 sm:flex-initial flex items-center gap-2">
+          {role === 'admin' && (
+            <Link href="/add-income">
+              <Button variant="outline" className="gap-1">
+                <DollarSign className="h-5 w-5" />
+                <span className='hidden sm:inline'>Añadir Ingreso</span>
+              </Button>
+            </Link>
+          )}
           <Link href="/add-expense">
             <Button className="gap-1">
               <PlusCircle className="h-5 w-5" />

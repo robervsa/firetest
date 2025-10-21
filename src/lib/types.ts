@@ -1,5 +1,6 @@
 
 
+
 export interface ExpenseCategory {
   id: string;
   name: string;
@@ -17,6 +18,16 @@ export interface Expense {
   entity: string;
   user_id: string;
   receipt_url: string;
+  created_at?: string;
+}
+
+export interface Income {
+    id: string;
+    description: string;
+    amount: number;
+    entity_id: string;
+    user_id: string;
+    created_at?: string;
 }
 
 export interface Entity {

@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -45,7 +46,10 @@ export default function MyExpensesPage() {
 
   const fetchExpenses = async () => {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    };
 
     const { data, error } = await supabase
       .from('expenses')
@@ -71,6 +75,8 @@ export default function MyExpensesPage() {
         schema: 'public',
         table: 'expenses'
       }, (payload) => {
+        // A simple refetch might be inefficient but is reliable.
+        // For optimization, one could check payload and update state directly.
         fetchExpenses();
       })
       .subscribe();
@@ -78,6 +84,7 @@ export default function MyExpensesPage() {
     return () => {
       supabase.removeChannel(channel);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [supabase]);
 
   const handleDelete = async (id: string) => {
@@ -87,7 +94,7 @@ export default function MyExpensesPage() {
           toast({ title: 'Error', description: 'No se pudo eliminar el gasto.', variant: 'destructive' });
       } else {
           toast({ title: 'Éxito', description: 'Gasto eliminado correctamente.' });
-          setExpenses(expenses.filter(exp => exp.id !== id));
+          // No need to manually filter, realtime subscription will trigger a refetch
       }
   }
 
@@ -105,6 +112,8 @@ export default function MyExpensesPage() {
           <CardContent>
             {loading ? (
               <p>Cargando gastos...</p>
+            ) : expenses.length === 0 ? (
+                <p>Aún no has registrado ningún gasto.</p>
             ) : (
               <Table>
                 <TableHeader>
