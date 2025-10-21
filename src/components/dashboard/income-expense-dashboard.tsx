@@ -111,7 +111,7 @@ export default function IncomeExpenseDashboard() {
                     {loading ? (
                         <p>Cargando datos de la entidad...</p>
                     ) : selectedEntity ? (
-                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                             <Card>
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                     <CardTitle className="text-sm font-medium">Ingresos Totales</CardTitle>
@@ -155,7 +155,7 @@ export default function IncomeExpenseDashboard() {
                          </div>
                     ) : chartData.length > 0 ? (
                         <ResponsiveContainer width="100%" height={300}>
-                            <BarChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                            <BarChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                                 <CartesianGrid strokeDasharray="3 3" />
                                 <XAxis dataKey="name" />
                                 <YAxis />
