@@ -16,7 +16,7 @@ export interface Expense {
   date: string;
   entity: string;
   user_id: string;
-  receipt_url: string;
+  receipt_url?: string;
   created_at?: string;
 }
 

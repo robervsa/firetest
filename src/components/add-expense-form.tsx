@@ -42,7 +42,7 @@ const formSchema = z.object({
   }),
   category: z.string().min(1, { message: 'Por favor, seleccione una categoría.' }),
   entity: z.string().optional(),
-  receipt: z.instanceof(File, { message: 'El comprobante es obligatorio.' }),
+  receipt: z.instanceof(File).optional(),
 });
 
 export default function AddExpenseForm() {
@@ -183,10 +183,6 @@ export default function AddExpenseForm() {
 
         const { data: urlData } = supabase.storage.from('receipts').getPublicUrl(filePath);
         receiptUrl = urlData.publicUrl;
-    } else {
-        toast({ title: 'Error', description: 'El comprobante es obligatorio.', variant: 'destructive' });
-        setIsSubmitting(false);
-        return;
     }
     
     const expenseData: {
@@ -195,15 +191,18 @@ export default function AddExpenseForm() {
       category: string;
       entity: string;
       user_id: string;
-      receipt_url: string;
+      receipt_url?: string;
     } = {
         description: values.description,
         amount: values.amount,
         category: values.category,
         entity: '',
         user_id: user.id,
-        receipt_url: receiptUrl,
     };
+
+    if (receiptUrl) {
+      expenseData.receipt_url = receiptUrl;
+    }
 
     if (profile.role === 'employee' && userEntity) {
         expenseData.entity = userEntity.name;
@@ -398,7 +397,7 @@ export default function AddExpenseForm() {
                 )}
 
               <FormDescription>
-                Toma una foto del ticket o súbelo desde tu galería.
+                Toma una foto del ticket o súbelo desde tu galería. (Opcional)
               </FormDescription>
               <FormMessage />
             </FormItem>
