@@ -30,9 +30,10 @@ const formSchema = z.object({
 
 interface AddEntityFormProps {
   onEntityAdded: (entity: Entity) => void;
+  parentId?: string | null;
 }
 
-export default function AddEntityForm({ onEntityAdded }: AddEntityFormProps) {
+export default function AddEntityForm({ onEntityAdded, parentId = null }: AddEntityFormProps) {
   const { toast } = useToast();
   const supabase = createClient();
   const form = useForm<z.infer<typeof formSchema>>({
@@ -53,7 +54,13 @@ export default function AddEntityForm({ onEntityAdded }: AddEntityFormProps) {
     const { data, error } = await supabase
       .from('entities')
       .insert([
-        { name: values.name, employee_count: values.employeeCount, total_expenses: 0, user_id: user.id },
+        { 
+            name: values.name, 
+            employee_count: values.employeeCount, 
+            total_expenses: 0, 
+            user_id: user.id,
+            parent_id: parentId
+        },
       ])
       .select()
       .single();
@@ -71,6 +78,7 @@ export default function AddEntityForm({ onEntityAdded }: AddEntityFormProps) {
             employeeCount: data.employee_count,
             totalExpenses: data.total_expenses,
             user_id: data.user_id,
+            parent_id: data.parent_id,
         }
         onEntityAdded(newEntity);
         toast({
@@ -89,7 +97,7 @@ export default function AddEntityForm({ onEntityAdded }: AddEntityFormProps) {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nombre del Grupo</FormLabel>
+              <FormLabel>Nombre de la Entidad</FormLabel>
               <FormControl>
                 <Input placeholder="Ej: Departamento de IT" {...field} />
               </FormControl>
@@ -110,7 +118,7 @@ export default function AddEntityForm({ onEntityAdded }: AddEntityFormProps) {
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full">Añadir Grupo</Button>
+        <Button type="submit" className="w-full">Añadir Entidad</Button>
       </form>
     </Form>
   );

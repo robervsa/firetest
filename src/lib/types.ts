@@ -1,6 +1,5 @@
 
 
-
 export interface ExpenseCategory {
   id: string;
   name: string;
@@ -36,6 +35,8 @@ export interface Entity {
   totalExpenses: number;
   employeeCount: number;
   user_id?: string;
+  parent_id?: string | null;
+  children?: Entity[];
 }
 
 export type AuditLogAction = 'inicio de sesion' | 'cierre de sesión' | 'añadir gasto' | 'editar gasto';
